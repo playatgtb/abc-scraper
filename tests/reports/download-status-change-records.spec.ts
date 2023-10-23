@@ -8,12 +8,13 @@ const NUM_DAYS = DAYS_OFFSET_TO - DAYS_OFFSET_FROM;
 const INTERVAL_SECONDS = 15;
 const SPACES_24 = '                        ';
 const FILTER_TRANSFER_2_SIDED_ONLY = false;
+const KEYWORDS = ['bar', 'pool hall', 'poolhall', 'billiards'];
 
 // filtering records
-  // ABC.ca.gov website
-  const Urls = {
-    STATUS_CHANGES: `https://www.abc.ca.gov/licensing/licensing-reports/status-changes/?RPTTYPE=3&RPTDATE=`
-  }
+// ABC.ca.gov website
+const Urls = {
+  STATUS_CHANGES: `https://www.abc.ca.gov/licensing/licensing-reports/status-changes/?RPTTYPE=3&RPTDATE=`
+};
 
 const ColumnNames = {
   TRANSFER: 'Transfer-From/To',
@@ -21,9 +22,7 @@ const ColumnNames = {
   LICENSE_NUMBER: 'License Number',
 };
 
-const getOwnerDBA = (record: any) => {
-  return record[ColumnNames.OWNER_AND_ADDRESS].split(SPACES_24)[0].trim();
-}
+const getOwnerDBA = (record: any) => record[ColumnNames.OWNER_AND_ADDRESS].split(SPACES_24)[0].trim();
 
 // retrieve daily reports for the past (OFFSET_TO - OFFSET_FROM) days
 // generate dates
@@ -31,7 +30,7 @@ let DATE = new Date();
 DATE.setDate(DATE.getDate() - 2 - DAYS_OFFSET_FROM);
 const dates = new Array(NUM_DAYS);
 for (let i = 0; i < NUM_DAYS; i++) {
-  const date = DATE.toISOString().split('T')[0]
+  const date = DATE.toISOString().split('T')[0];
   const d = date.split('-');
   dates[i] = {
     read: `${d[1]}/${d[2]}/${d[0]}`,
@@ -39,6 +38,11 @@ for (let i = 0; i < NUM_DAYS; i++) {
   };
   DATE.setDate(DATE.getDate() - 1);
 };
+
+const recordsOfInterest = {
+  keywordRecords: {},
+  transferRecords: {},
+}
 
 // process records
 const processFile = async(file: string) => {
@@ -48,25 +52,26 @@ const processFile = async(file: string) => {
     skip_empty_lines: true,
   });
 
-  let licenseRecords = {};
-
   // filter records
   const filtered = records.filter(record => {
-    const ownerDBA = getOwnerDBA(record)
-
-    const has2SidedTransfer = record[ColumnNames.TRANSFER].includes('/');
-    const has1SidedTransfer = record[ColumnNames.TRANSFER].trim().length;
-    const hasTransfer = FILTER_TRANSFER_2_SIDED_ONLY ? has2SidedTransfer : has1SidedTransfer;
+    const ownerDBA = getOwnerDBA(record);
+    const hasTransferFromTo = record[ColumnNames.TRANSFER].includes('/');
+    const hasOnlyTransferFrom = record[ColumnNames.TRANSFER].trim().length;
     const licenseNumber = record[ColumnNames.LICENSE_NUMBER];
+    const hasKeywordMatch = KEYWORDS.find(word => ownerDBA.match(new RegExp(`\\b${word}\\b`, 'i')));
+    const hasTransfer = FILTER_TRANSFER_2_SIDED_ONLY ? hasTransferFromTo : hasOnlyTransferFrom;
 
-    licenseRecords[licenseNumber] = record;
+    if (hasKeywordMatch) {
+      recordsOfInterest.keywordRecords[licenseNumber] = record;
+    } else {
+      recordsOfInterest.transferRecords[licenseNumber] = record;
+    }
 
     // check for transfers and keywords
     // test word boundaries and ignore case
-    const keywords = ['bar', 'pool hall', 'poolhall', 'billiards'];
     return hasTransfer// && keywords.find(word => ownerDBA.match(new RegExp(`\\b${word}\\b`, 'i')));
-  })
-
+  });
+  
   console.log(`original records: ${records.length}`);
   console.log(`filtered records: ${filtered.length}`);
 
@@ -101,7 +106,6 @@ for (let i = 0; i < dates.length; i++) {
 
   // This TEST throws if there is no report data, so we need ot react to it
   test(`load abc status-change page ${date.read}`, async ({ page }) => {
-
     if (reports.length > 1 && fs.existsSync(reports[i-1].downloadPath)) {
       // write empty csv file
     }
@@ -119,5 +123,3 @@ for (let i = 0; i < dates.length; i++) {
     await new Promise(resolve => setTimeout(resolve, INTERVAL_SECONDS * 1000));
   });
 }
-
-
