@@ -10,6 +10,7 @@ import { parse } from "csv-parse/sync";
  * https://www.abc.ca.gov/licensing/license-types/
  */
 
+// Configuration
 const DAYS_OFFSET_TO = 3;
 const DAYS_OFFSET_FROM = 2;
 const NUM_DAYS = DAYS_OFFSET_TO - DAYS_OFFSET_FROM;
@@ -36,7 +37,7 @@ const Urls = {
 };
 
 const Headers = {
-  TYPE: 'Type| Dup',
+  LICENSE_TYPE: 'Type| Dup',
   STATUS_CHANGE: 'Status Changed From/To',
   TRANSFER: 'Transfer-From/To',
   OWNER_DBA: 'Primary Owner and Premises Addr.',
@@ -44,7 +45,7 @@ const Headers = {
 };
 
 const getOwnerDBA = (_: any) => _[Headers.OWNER_DBA].split(SPACES_24)[0].trim();
-const getLicenseType = (_: any) => _[Headers.TYPE].split('|')[0].trim();
+const getLicenseType = (_: any) => _[Headers.LICENSE_TYPE].split('|')[0].trim();
 
 // retrieve reports
 const dates = new Array(NUM_DAYS);
@@ -58,9 +59,11 @@ for (let i = 0; i < NUM_DAYS; i++) {
   DATE.setDate(DATE.getDate() - 1);
 };
 
+const licenseTypeRecords: Array<any> = [];
 const keywordRecords: Array<any> = [];
 const transferToRecords: Array<any> = [];
 const recordsOfInterest = {
+  licenseTypeRecords,
   keywordRecords,
   transferToRecords,
 }
@@ -75,41 +78,43 @@ const processFile = async(file: string) => {
 
   // filter
   // * status: ACTIVE - i.e. status changes to active, e.g. "CANCEL ACTIVE"
-  // * type:  having appropriate license number
+  // * type:  one of the license types we care about
   const filtered = records.filter((record: any) => {
     const isActive = record[Headers.STATUS_CHANGE].includes(' ACTIVE');
-    const isOfType = LICENSE_TYPES.includes(getLicenseType(record));
-    return isActive && isOfType;
+    const isLicenseType = LICENSE_TYPES.includes(getLicenseType(record));
+    return isActive && isLicenseType;
   });
 
   // analyze records
   // * keywords
-  // * transfer-to record  
+  // * transfer-to record
   filtered.forEach(record => {
     const ownerDBA = getOwnerDBA(record);
     const hasKeywordMatch = KEYWORDS.find(word => ownerDBA.match(new RegExp(`\\b${word}\\b`, 'i')));
-    
+
     if (hasKeywordMatch) {
       recordsOfInterest.keywordRecords.push(record);
     } else {
       recordsOfInterest.transferToRecords.push(record);
     }
   });
-  
+
   console.log(`original records: ${filtered.length}`);
   console.log(`keyword records: ${recordsOfInterest.keywordRecords.length}`);
 
   // process
   recordsOfInterest.keywordRecords.forEach(record => {
     const ownerDBA = getOwnerDBA(record);
+    const licenseType = getLicenseType(record);
     const licenseNumber = record[Headers.LICENSE_NUMBER];
     const transfer = record[Headers.TRANSFER];
     //const hasTransferToRecord = record[Headers.TRANSFER].includes('/');
     console.log(
 `------------------------------
 owner: ${ownerDBA}
-license: ${licenseNumber}
-transfer: ${transfer}`
+type: ${licenseType}
+transfer: ${transfer}
+license: ${licenseNumber}`
     );
   })
 }
