@@ -2,13 +2,32 @@ import { test } from '@playwright/test';
 import * as fs from "fs";
 import { parse } from "csv-parse/sync";
 
+/**
+ * References
+ * https://www.abc.ca.gov/licensing/
+ * https://www.abc.ca.gov/licensing/licensing-reports/
+ * https://www.abc.ca.gov/licensing/licensing-reports/status-changes/
+ * https://www.abc.ca.gov/licensing/license-types/
+ */
+
 const DAYS_OFFSET_TO = 3;
 const DAYS_OFFSET_FROM = 2;
 const NUM_DAYS = DAYS_OFFSET_TO - DAYS_OFFSET_FROM;
 const INTERVAL_SECONDS = 15;
 const SPACES_24 = '                        ';
-const FILTER_TRANSFER_2_SIDED_ONLY = false;
 const KEYWORDS = ['bar', 'pool hall', 'poolhall', 'billiards'];
+const LICENSE_TYPES = [
+  40, // On-Sale Beer
+  41, // On-Sale Beer & Wine - Eating Place
+  42, // On-Sale Beer & Wine - Public Premises
+  47, // On-Sale General - Eating Place
+  48, // On-Sale General - Public Premises
+];
+
+// daily reports for the past (OFFSET_TO - OFFSET_FROM) days
+// NOTE: report by date can only be generated before 2 days ago
+const DATE = new Date();
+DATE.setDate(DATE.getDate() - 2 - DAYS_OFFSET_FROM);
 
 // filtering records
 // ABC.ca.gov website
@@ -16,18 +35,18 @@ const Urls = {
   STATUS_CHANGES: `https://www.abc.ca.gov/licensing/licensing-reports/status-changes/?RPTTYPE=3&RPTDATE=`
 };
 
-const ColumnNames = {
+const Headers = {
+  TYPE: 'Type| Dup',
+  STATUS_CHANGE: 'Status Changed From/To',
   TRANSFER: 'Transfer-From/To',
-  OWNER_AND_ADDRESS: 'Primary Owner and Premises Addr.',
+  OWNER_DBA: 'Primary Owner and Premises Addr.',
   LICENSE_NUMBER: 'License Number',
 };
 
-const getOwnerDBA = (record: any) => record[ColumnNames.OWNER_AND_ADDRESS].split(SPACES_24)[0].trim();
+const getOwnerDBA = (_: any) => _[Headers.OWNER_DBA].split(SPACES_24)[0].trim();
+const getLicenseType = (_: any) => _[Headers.TYPE].split('|')[0].trim();
 
-// retrieve daily reports for the past (OFFSET_TO - OFFSET_FROM) days
-// generate dates
-let DATE = new Date();
-DATE.setDate(DATE.getDate() - 2 - DAYS_OFFSET_FROM);
+// retrieve reports
 const dates = new Array(NUM_DAYS);
 for (let i = 0; i < NUM_DAYS; i++) {
   const date = DATE.toISOString().split('T')[0];
@@ -39,9 +58,11 @@ for (let i = 0; i < NUM_DAYS; i++) {
   DATE.setDate(DATE.getDate() - 1);
 };
 
+const keywordRecords: Array<any> = [];
+const transferToRecords: Array<any> = [];
 const recordsOfInterest = {
-  keywordRecords: {},
-  transferRecords: {},
+  keywordRecords,
+  transferToRecords,
 }
 
 // process records
@@ -52,34 +73,44 @@ const processFile = async(file: string) => {
     skip_empty_lines: true,
   });
 
-  // filter records
-  const filtered = records.filter(record => {
+  // filter
+  // * status: ACTIVE - i.e. status changes to active, e.g. "CANCEL ACTIVE"
+  // * type:  having appropriate license number
+  const filtered = records.filter((record: any) => {
+    const isActive = record[Headers.STATUS_CHANGE].includes(' ACTIVE');
+    const isOfType = LICENSE_TYPES.includes(getLicenseType(record));
+    return isActive && isOfType;
+  });
+
+  // analyze records
+  // * keywords
+  // * transfer-to record  
+  filtered.forEach(record => {
     const ownerDBA = getOwnerDBA(record);
-    const hasTransferFromTo = record[ColumnNames.TRANSFER].includes('/');
-    const hasOnlyTransferFrom = record[ColumnNames.TRANSFER].trim().length;
-    const licenseNumber = record[ColumnNames.LICENSE_NUMBER];
     const hasKeywordMatch = KEYWORDS.find(word => ownerDBA.match(new RegExp(`\\b${word}\\b`, 'i')));
-    const hasTransfer = FILTER_TRANSFER_2_SIDED_ONLY ? hasTransferFromTo : hasOnlyTransferFrom;
-
+    
     if (hasKeywordMatch) {
-      recordsOfInterest.keywordRecords[licenseNumber] = record;
+      recordsOfInterest.keywordRecords.push(record);
     } else {
-      recordsOfInterest.transferRecords[licenseNumber] = record;
+      recordsOfInterest.transferToRecords.push(record);
     }
-
-    // check for transfers and keywords
-    // test word boundaries and ignore case
-    return hasTransfer// && keywords.find(word => ownerDBA.match(new RegExp(`\\b${word}\\b`, 'i')));
   });
   
-  console.log(`original records: ${records.length}`);
-  console.log(`filtered records: ${filtered.length}`);
+  console.log(`original records: ${filtered.length}`);
+  console.log(`keyword records: ${recordsOfInterest.keywordRecords.length}`);
 
-  // process records
-  filtered.forEach(record => {
-    // show progress
+  // process
+  recordsOfInterest.keywordRecords.forEach(record => {
     const ownerDBA = getOwnerDBA(record);
-    console.log(ownerDBA, '-----' , record[ColumnNames.TRANSFER]);
+    const licenseNumber = record[Headers.LICENSE_NUMBER];
+    const transfer = record[Headers.TRANSFER];
+    //const hasTransferToRecord = record[Headers.TRANSFER].includes('/');
+    console.log(
+`------------------------------
+owner: ${ownerDBA}
+license: ${licenseNumber}
+transfer: ${transfer}`
+    );
   })
 }
 
