@@ -10,25 +10,30 @@ import { parse } from "csv-parse/sync";
  * https://www.abc.ca.gov/licensing/license-types/
  */
 
-// Configuration
-const DAYS_OFFSET_TO = 3;
-const DAYS_OFFSET_FROM = 2;
-const NUM_DAYS = DAYS_OFFSET_TO - DAYS_OFFSET_FROM;
-const INTERVAL_SECONDS = 15;
 const SPACES_24 = '                        ';
-const KEYWORDS = ['bar', 'pool hall', 'poolhall', 'billiards'];
-const LICENSE_TYPES = [
-  40, // On-Sale Beer
-  41, // On-Sale Beer & Wine - Eating Place
-  42, // On-Sale Beer & Wine - Public Premises
-  47, // On-Sale General - Eating Place
-  48, // On-Sale General - Public Premises
-];
+
+// Configuration
+const Config = {
+  DAYS_OFFSET_TO: 3,
+  DAYS_OFFSET_FROM: 2,
+  NUM_DAYS: 1,
+  INTERVAL_SECONDS: 15,
+  KEYWORDS: ['bar', 'pool hall', 'poolhall', 'billiards'],
+  LICENSE_TYPES: [
+    40, // On-Sale Beer
+    41, // On-Sale Beer & Wine - Eating Place
+    42, // On-Sale Beer & Wine - Public Premises
+    47, // On-Sale General - Eating Place
+    48, // On-Sale General - Public Premises
+  ],
+  FILTER_BY_KEYWORDS: true,
+}
+Config.NUM_DAYS = Config.DAYS_OFFSET_TO - Config.DAYS_OFFSET_FROM;
 
 // daily reports for the past (OFFSET_TO - OFFSET_FROM) days
 // NOTE: report by date can only be generated before 2 days ago
 const DATE = new Date();
-DATE.setDate(DATE.getDate() - 2 - DAYS_OFFSET_FROM);
+DATE.setDate(DATE.getDate() - 2 - Config.DAYS_OFFSET_FROM);
 
 // filtering records
 // ABC.ca.gov website
@@ -44,12 +49,12 @@ const Headers = {
   LICENSE_NUMBER: 'License Number',
 };
 
-const getOwnerDBA = (_: any) => _[Headers.OWNER_DBA].split(SPACES_24)[0].trim();
-const getLicenseType = (_: any) => _[Headers.LICENSE_TYPE].split('|')[0].trim();
+const getOwnerDBA = (record: any) => record[Headers.OWNER_DBA].split(SPACES_24)[0].trim();
+const getLicenseType = (record: any) => record[Headers.LICENSE_TYPE].split('|')[0].trim();
 
 // retrieve reports
-const dates = new Array(NUM_DAYS);
-for (let i = 0; i < NUM_DAYS; i++) {
+const dates = new Array(Config.NUM_DAYS);
+for (let i = 0; i < Config.NUM_DAYS; i++) {
   const date = DATE.toISOString().split('T')[0];
   const d = date.split('-');
   dates[i] = {
@@ -79,28 +84,24 @@ const processFile = async(file: string) => {
   // filter
   // * status: ACTIVE - i.e. status changes to active, e.g. "CANCEL ACTIVE"
   // * type:  one of the license types we care about
-  const filtered = records.filter((record: any) => {
+  const basicFilter = records.filter((record: any) => {
     const isActive = record[Headers.STATUS_CHANGE].includes(' ACTIVE');
-    const isLicenseType = LICENSE_TYPES.includes(getLicenseType(record));
-    return isActive && isLicenseType;
+    const hasLicenseType = Config.LICENSE_TYPES.includes(getLicenseType(record));
+    return isActive && hasLicenseType;
   });
 
   // analyze records
   // * keywords
   // * transfer-to record
-  filtered.forEach(record => {
-    const ownerDBA = getOwnerDBA(record);
-    const hasKeywordMatch = KEYWORDS.find(word => ownerDBA.match(new RegExp(`\\b${word}\\b`, 'i')));
+  if (Config.FILTER_BY_KEYWORDS) {
+    recordsOfInterest.keywordRecords = basicFilter.map(record => {
+      const ownerDBA = getOwnerDBA(record);
+      return Config.KEYWORDS.find(word => ownerDBA.match(new RegExp(`\\b${word}\\b`, 'i')));
+    });
+  }
 
-    if (hasKeywordMatch) {
-      recordsOfInterest.keywordRecords.push(record);
-    } else {
-      recordsOfInterest.transferToRecords.push(record);
-    }
-  });
-
-  console.log(`original records: ${filtered.length}`);
-  console.log(`keyword records: ${recordsOfInterest.keywordRecords.length}`);
+  console.log(`basic filter records: ${basicFilter.length}`);
+  console.log(`keyword filter records: ${recordsOfInterest.keywordRecords.length}`);
 
   // process
   recordsOfInterest.keywordRecords.forEach(record => {
@@ -147,7 +148,7 @@ for (let i = 0; i < dates.length; i++) {
     }
     const report = reports[i];
 
-    console.log(`----- ${i + DAYS_OFFSET_FROM} -> ${DAYS_OFFSET_TO}:  ${report.date.read}  ${report.URL}`);
+    console.log(`----- ${i + Config.DAYS_OFFSET_FROM} -> ${Config.DAYS_OFFSET_TO}:  ${report.date.read}  ${report.URL}`);
     if (!fs.existsSync(report.downloadPath)) {
       await downloadReport(page, report.URL, report.downloadPath);
     }
@@ -156,6 +157,6 @@ for (let i = 0; i < dates.length; i++) {
     //get detail pages
 
     if (i >= dates.length - 1) return;
-    await new Promise(resolve => setTimeout(resolve, INTERVAL_SECONDS * 1000));
+    await new Promise(resolve => setTimeout(resolve, Config.INTERVAL_SECONDS * 1000));
   });
 }
