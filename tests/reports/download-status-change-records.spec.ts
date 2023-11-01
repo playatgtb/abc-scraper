@@ -11,32 +11,6 @@ import { parse } from "csv-parse/sync";
  */
 
 const SPACES_24 = '                        ';
-
-// Configuration
-const Config = {
-  DAYS_OFFSET_TO: 3,
-  DAYS_OFFSET_FROM: 2,
-  NUM_DAYS: 1,
-  INTERVAL_SECONDS: 15,
-  KEYWORDS: ['bar', 'pool hall', 'poolhall', 'billiards'],
-  LICENSE_TYPES: [
-    40, // On-Sale Beer
-    41, // On-Sale Beer & Wine - Eating Place
-    42, // On-Sale Beer & Wine - Public Premises
-    47, // On-Sale General - Eating Place
-    48, // On-Sale General - Public Premises
-  ],
-  FILTER_BY_KEYWORDS: true,
-}
-Config.NUM_DAYS = Config.DAYS_OFFSET_TO - Config.DAYS_OFFSET_FROM;
-
-// daily reports for the past (OFFSET_TO - OFFSET_FROM) days
-// NOTE: report by date can only be generated before 2 days ago
-const DATE = new Date();
-DATE.setDate(DATE.getDate() - 2 - Config.DAYS_OFFSET_FROM);
-
-// filtering records
-// ABC.ca.gov website
 const Urls = {
   STATUS_CHANGES: `https://www.abc.ca.gov/licensing/licensing-reports/status-changes/?RPTTYPE=3&RPTDATE=`
 };
@@ -49,20 +23,39 @@ const Headers = {
   LICENSE_NUMBER: 'License Number',
 };
 
+const Config = {
+  Report: {
+    START_DAYS_AGO: 0,
+    DAYS_RANGE: 1,
+    RATE_DELAY_SECONDS: 10,
+  },
+  ABC_LICENSE_TYPES: [
+    40, // On-Sale Beer
+    41, // On-Sale Beer & Wine - Eating Place
+    42, // On-Sale Beer & Wine - Public Premises
+    47, // On-Sale General - Eating Place
+    48, // On-Sale General - Public Premises
+  ],
+  KEYWORDS: ['bar', 'pool hall', 'poolhall', 'billiards'],
+  FILTER_BY_KEYWORDS: true,
+};
+
 const getOwnerDBA = (record: any) => record[Headers.OWNER_DBA].split(SPACES_24)[0].trim();
 const getLicenseType = (record: any) => record[Headers.LICENSE_TYPE].split('|')[0].trim();
 
 // retrieve reports
-const dates = new Array(Config.NUM_DAYS);
-for (let i = 0; i < Config.NUM_DAYS; i++) {
-  const date = DATE.toISOString().split('T')[0];
+const tempDate = new Date();
+tempDate.setDate(tempDate.getDate() - Math.max(Config.Report.START_DAYS_AGO, 2));
+const dates = new Array(Config.Report.DAYS_RANGE);
+for (let i = 0; i < Config.Report.DAYS_RANGE; i++) {
+  const date = tempDate.toISOString().split('T')[0];
   const d = date.split('-');
   dates[i] = {
     read: `${d[1]}/${d[2]}/${d[0]}`,
     write: date,
   };
-  DATE.setDate(DATE.getDate() - 1);
-};
+  tempDate.setDate(tempDate.getDate() - 1);
+}
 
 const licenseTypeRecords: Array<any> = [];
 const keywordRecords: Array<any> = [];
@@ -86,7 +79,7 @@ const processFile = async(file: string) => {
   // * type:  one of the license types we care about
   const basicFilter = records.filter((record: any) => {
     const isActive = record[Headers.STATUS_CHANGE].includes(' ACTIVE');
-    const hasLicenseType = Config.LICENSE_TYPES.includes(getLicenseType(record));
+    const hasLicenseType = Config.ABC_LICENSE_TYPES.includes(getLicenseType(record));
     return isActive && hasLicenseType;
   });
 
@@ -148,7 +141,7 @@ for (let i = 0; i < dates.length; i++) {
     }
     const report = reports[i];
 
-    console.log(`----- ${i + Config.DAYS_OFFSET_FROM} -> ${Config.DAYS_OFFSET_TO}:  ${report.date.read}  ${report.URL}`);
+    console.log(`----- ${i} -> ${Config.Report.DAYS_RANGE}:  ${report.date.read}  ${report.URL}`);
     if (!fs.existsSync(report.downloadPath)) {
       await downloadReport(page, report.URL, report.downloadPath);
     }
@@ -157,6 +150,6 @@ for (let i = 0; i < dates.length; i++) {
     //get detail pages
 
     if (i >= dates.length - 1) return;
-    await new Promise(resolve => setTimeout(resolve, Config.INTERVAL_SECONDS * 1000));
+    await new Promise(resolve => setTimeout(resolve, Config.Report.RATE_DELAY_SECONDS * 1000));
   });
 }
