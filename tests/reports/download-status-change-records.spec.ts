@@ -2,121 +2,111 @@ import { test } from '@playwright/test';
 import * as fs from "fs";
 import { parse } from "csv-parse/sync";
 
-/**
- * References
- * https://www.abc.ca.gov/licensing/
- * https://www.abc.ca.gov/licensing/licensing-reports/
- * https://www.abc.ca.gov/licensing/licensing-reports/status-changes/
- * https://www.abc.ca.gov/licensing/license-types/
- */
+function main() {
+  const reports: Array<{date: {read: string, write:string}, downloadPath: string, URL: string}> = [];
+  const dates = buildReportDateRange();
 
-const SPACES_24 = '                        ';
-const Urls = {
-  STATUS_CHANGES: `https://www.abc.ca.gov/licensing/licensing-reports/status-changes/?RPTTYPE=3&RPTDATE=`
-};
+  for (let i = 0; i < dates.length; i++) {
+    const date = dates[i];
+    reports[i] = {
+      date,
+      downloadPath: `./downloads/${date.write}/report-status-changes.csv`,
+      URL: URL_STATUS_CHANGES + date.read,
+    }
 
-const Headers = {
-  LICENSE_TYPE: 'Type| Dup',
-  STATUS_CHANGE: 'Status Changed From/To',
-  TRANSFER: 'Transfer-From/To',
-  OWNER_DBA: 'Primary Owner and Premises Addr.',
-  LICENSE_NUMBER: 'License Number',
-};
+    test(`load abc status-change page ${date.read}`, async ({ page }) => {
+      if (reports.length > 1 && fs.existsSync(reports[i-1].downloadPath)) {
+        // write empty csv file
+      }
+      const report = reports[i];
 
-const Config = {
-  Report: {
-    START_DAYS_AGO: 0,
-    DAYS_RANGE: 1,
-    RATE_DELAY_SECONDS: 10,
-  },
-  ABC_LICENSE_TYPES: [
-    40, // On-Sale Beer
-    41, // On-Sale Beer & Wine - Eating Place
-    42, // On-Sale Beer & Wine - Public Premises
-    47, // On-Sale General - Eating Place
-    48, // On-Sale General - Public Premises
-  ],
-  KEYWORDS: ['bar', 'pool hall', 'poolhall', 'billiards'],
-  FILTER_BY_KEYWORDS: true,
-};
+      console.log(`--- ${i} of ${Config.Report.DAYS_RANGE}`, report);
+      if (!fs.existsSync(report.downloadPath)) {
+        await downloadReport(page, report.URL, report.downloadPath);
+      }
+      await processRecords(report.downloadPath);
 
-const getOwnerDBA = (record: any) => record[Headers.OWNER_DBA].split(SPACES_24)[0].trim();
-const getLicenseType = (record: any) => record[Headers.LICENSE_TYPE].split('|')[0].trim();
-
-// retrieve reports
-const tempDate = new Date();
-tempDate.setDate(tempDate.getDate() - Math.max(Config.Report.START_DAYS_AGO, 2));
-const dates = new Array(Config.Report.DAYS_RANGE);
-for (let i = 0; i < Config.Report.DAYS_RANGE; i++) {
-  const date = tempDate.toISOString().split('T')[0];
-  const d = date.split('-');
-  dates[i] = {
-    read: `${d[1]}/${d[2]}/${d[0]}`,
-    write: date,
-  };
-  tempDate.setDate(tempDate.getDate() - 1);
+      if (i >= dates.length - 1) return;
+      await new Promise(resolve => setTimeout(resolve, Config.Report.THROTTLE_DELAY_SECONDS * 1000));
+    });
+  }
 }
 
-const licenseTypeRecords: Array<any> = [];
-const keywordRecords: Array<any> = [];
-const transferToRecords: Array<any> = [];
-const recordsOfInterest = {
-  licenseTypeRecords,
-  keywordRecords,
-  transferToRecords,
+// ------------------------------
+
+const processRecords = async(file: string) => {
+  const records = loadRecords(file);
+  let filterCount = 0;
+  records.forEach(record => {
+    const basicMatch = basicFilterMatch(record);
+    if (!basicMatch) return;
+
+    const keywordMatchingEnabled = Config.FILTER_BY_KEYWORDS;
+    const keywordMatch =  keywordFilterMatch(record);
+    if (keywordMatchingEnabled && !keywordMatch) return;
+
+    filterCount++;
+
+    const ownerDBA = getOwnerDBA(record);
+    const licenseType = getLicenseType(record);
+    const license = record[Config.Headers.LICENSE_NUMBER];
+    const hasTransferToRecord = record[Config.Headers.TRANSFER].includes('/');
+    const transferTo = hasTransferToRecord && record[Config.Headers.TRANSFER].split('/')[1].trim();
+
+    const data = {
+      ownerDBA,
+      license,
+      licenseType,
+      transferTo,
+      fullRecord: record,
+    }
+
+    console.log(data);
+  });
+  console.log({filterCount});
 }
 
-// process records
-const processFile = async(file: string) => {
-  // load records from file
-  const records = parse(fs.readFileSync(file), {
+// ------------------------------
+
+const getOwnerDBA = (record: any) => record[Config.Headers.OWNER_DBA].split(SPACES_24)[0].trim();
+const getLicenseType = (record: any) => record[Config.Headers.LICENSE_TYPE].split('|')[0].trim();
+
+const basicFilterMatch = (record: any) => {
+  const isStatusActive = record[Config.Headers.STATUS_CHANGE].includes(' ACTIVE');
+  const licenseTypeMatch = Config.ABC_LICENSE_TYPES.includes(getLicenseType(record));
+  return isStatusActive && licenseTypeMatch;
+}
+
+const keywordFilterMatch = (record: any) => {
+  const ownerDBA = getOwnerDBA(record);
+  return !!Config.KEYWORDS.find(word => ownerDBA.match(new RegExp(`\\b${word}\\b`, 'i')));
+}
+
+const loadRecords = (file: string) => {
+  return parse(fs.readFileSync(file), {
     columns: true,
     skip_empty_lines: true,
   });
-
-  // filter
-  // * status: ACTIVE - i.e. status changes to active, e.g. "CANCEL ACTIVE"
-  // * type:  one of the license types we care about
-  const basicFilter = records.filter((record: any) => {
-    const isActive = record[Headers.STATUS_CHANGE].includes(' ACTIVE');
-    const hasLicenseType = Config.ABC_LICENSE_TYPES.includes(getLicenseType(record));
-    return isActive && hasLicenseType;
-  });
-
-  // analyze records
-  // * keywords
-  // * transfer-to record
-  if (Config.FILTER_BY_KEYWORDS) {
-    recordsOfInterest.keywordRecords = basicFilter.map(record => {
-      const ownerDBA = getOwnerDBA(record);
-      return Config.KEYWORDS.find(word => ownerDBA.match(new RegExp(`\\b${word}\\b`, 'i')));
-    });
-  }
-
-  console.log(`basic filter records: ${basicFilter.length}`);
-  console.log(`keyword filter records: ${recordsOfInterest.keywordRecords.length}`);
-
-  // process
-  recordsOfInterest.keywordRecords.forEach(record => {
-    const ownerDBA = getOwnerDBA(record);
-    const licenseType = getLicenseType(record);
-    const licenseNumber = record[Headers.LICENSE_NUMBER];
-    const transfer = record[Headers.TRANSFER];
-    //const hasTransferToRecord = record[Headers.TRANSFER].includes('/');
-    console.log(
-`------------------------------
-owner: ${ownerDBA}
-type: ${licenseType}
-transfer: ${transfer}
-license: ${licenseNumber}`
-    );
-  })
 }
 
-const downloadReport = async (page: any, URL: string, file: string) => {
-  await page.goto(URL);
+const buildReportDateRange = () => {
+  const tempDate = new Date();
+  tempDate.setDate(tempDate.getDate() - Math.max(Config.Report.START_DAYS_AGO, 2));
+  const dates = new Array(Config.Report.DAYS_RANGE);
+  for (let i=0; i < dates.length; i++) {
+    const date = tempDate.toISOString().split('T')[0];
+    const d = date.split('-');
+    dates[i] = {
+      read: `${d[1]}/${d[2]}/${d[0]}`,
+      write: date,
+    };
+    tempDate.setDate(tempDate.getDate() - 1);
+  };
+  return dates;
+}
 
-  // download report
+const downloadReport = async (page: any, url: string, file: string) => {
+  await page.goto(url);
   const button = page.locator('button:has-text("Download Report (CSV)")')
   const downloadPromise = page.waitForEvent('download');
   await button.click();
@@ -124,32 +114,47 @@ const downloadReport = async (page: any, URL: string, file: string) => {
   await download.saveAs(file);
 }
 
-const reports: Array<{date: {read: string, write:string}, downloadPath: string, URL: string}> = [];
+// ------------------------------
 
-for (let i = 0; i < dates.length; i++) {
-  const date = dates[i];
-  reports[i] = {
-    date,
-    downloadPath: `./downloads/${date.write}/report-status-changes.csv`,
-    URL: Urls.STATUS_CHANGES + date.read,
-  }
+const Config = {
+  Report: {
+    START_DAYS_AGO: 0,
+    DAYS_RANGE: 1,
+    THROTTLE_DELAY_SECONDS: 10,
+  },
+  KEYWORDS: ['bar', 'pool hall', 'poolhall', 'billiards'],
+  FILTER_BY_KEYWORDS: true,
+  ABC_LICENSE_TYPES: [
+    '40', // On-Sale Beer
+    '41', // On-Sale Beer & Wine - Eating Place
+    '42', // On-Sale Beer & Wine - Public Premises
+    '47', // On-Sale General - Eating Place
+    '48', // On-Sale General - Public Premises
+  ],
+  Headers: {
+    LICENSE_TYPE: 'Type| Dup',
+    STATUS_CHANGE: 'Status Changed From/To',
+    TRANSFER: 'Transfer-From/To',
+    OWNER_DBA: 'Primary Owner and Premises Addr.',
+    LICENSE_NUMBER: 'License Number',
+  },
+};
 
-  // This TEST throws if there is no report data, so we need ot react to it
-  test(`load abc status-change page ${date.read}`, async ({ page }) => {
-    if (reports.length > 1 && fs.existsSync(reports[i-1].downloadPath)) {
-      // write empty csv file
-    }
-    const report = reports[i];
+// ------------------------------
 
-    console.log(`----- ${i} -> ${Config.Report.DAYS_RANGE}:  ${report.date.read}  ${report.URL}`);
-    if (!fs.existsSync(report.downloadPath)) {
-      await downloadReport(page, report.URL, report.downloadPath);
-    }
-    await processFile(report.downloadPath);
+const URL_STATUS_CHANGES = `https://www.abc.ca.gov/licensing/licensing-reports/status-changes/?RPTTYPE=3&RPTDATE=`;
+const SPACES_24 = '                        ';
 
-    //get detail pages
+// ------------------------------
 
-    if (i >= dates.length - 1) return;
-    await new Promise(resolve => setTimeout(resolve, Config.Report.RATE_DELAY_SECONDS * 1000));
-  });
-}
+main();
+
+// ------------------------------
+
+/**
+ * Resources:
+ *  - https://www.abc.ca.gov/licensing/
+ *  - https://www.abc.ca.gov/licensing/licensing-reports/
+ *  - https://www.abc.ca.gov/licensing/licensing-reports/status-changes/
+ *  - https://www.abc.ca.gov/licensing/license-types/
+ */
