@@ -7,9 +7,10 @@ function main() {
     const date = getReportingDate(i);
 
     test(`Status Change report ${date.read}`, async ({ page }) => {
+      handleEmptyReport(i-1);
       const reportConfig = getReportConfig(date);
       console.log(`-- ${i+1} of ${Config.DAYS_RANGE} : ${date.read}`, reportConfig);
-      if (!fs.existsSync(reportConfig.downloadPath)) {
+      if (!fs.existsSync(reportConfig.saveDir)) {
         await downloadReport(page, reportConfig, i);
         await processRecords(page, reportConfig);
       }
@@ -45,12 +46,24 @@ const handleKeywordMatchScreenshots = async (page: any, recordData: RecordData, 
   if (hasTransferToRecord(recordData)) {
     await navigateToLicensePage(page, recordData, reportConfig);
     const name = await page.locator('dd:near(:text("Primary Owner"))').first().textContent();
+    console.log(`checking transferTo name: ${name}`);
     if (businessNameKeywordMatch(name)) {
       await screenshot(page, recordData, reportConfig);
     }
   } else if (businessNameKeywordMatch(recordData.ownerDBA)) {
     await navigateToLicensePage(page, recordData, reportConfig);
     await screenshot(page, recordData, reportConfig);
+  }
+}
+
+const handleEmptyReport = (daysAgo: number) => {
+  if (daysAgo < 0) return;
+  const date = getReportingDate(daysAgo);
+  const reportConfig = getReportConfig(date);
+  if (!fs.existsSync(reportConfig.saveDir)) {
+    console.log(`creating empty report dir: ${reportConfig.saveDir}`);
+    fs.mkdirSync(reportConfig.saveDir, { recursive: true });
+    fs.writeFileSync(`${reportConfig.saveDir}/empty.csv`, '');
   }
 }
 
@@ -82,8 +95,11 @@ const screenshot = async (page: any, recordData: RecordData, reportConfig: Repor
   const hasTransferTo = hasTransferToRecord(recordData);
   const singleLicense = getSingleLicense(recordData);
   const screenshotPath = `${reportConfig.saveDir}-screenshots/${singleLicense}.png`;
+  const screenshotLocator = page.locator(SCREENSHOT_ELEMENT_LOCATOR);
+  expect(screenshotLocator).toBeVisible({ timeout: 10000 });
   await page.locator(SCREENSHOT_ELEMENT_LOCATOR).screenshot({ path: screenshotPath });
   console.log(`screenshot saved (${hasTransferTo?'transferTo':'record'}): ${screenshotPath}`);
+  console.log(`   -- ${recordData.ownerDBA}`);
 }
 
 const throttlePageNavigation = async (page: any) => {
