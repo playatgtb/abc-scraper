@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import * as fs from "fs";
 import { parse } from "csv-parse/sync";
 
@@ -103,6 +103,8 @@ const downloadReport = async (page: any, reportConfig: ReportConfig, daysAgo: nu
   }
   await page.goto(reportConfig.statusChangesUrl);
   const button = page.locator('button:has-text("Download Report (CSV)")')
+  expect(button).toBeVisible({ timeout: 10000 });
+
   const downloadPromise = page.waitForEvent('download');
   await button.click();
   const download = await downloadPromise;
@@ -159,7 +161,7 @@ const getReportConfig = (date: ReportDate): ReportConfig => {
 
 const Config = {
   START_DAYS_AGO: 0,
-  DAYS_RANGE: 30,
+  DAYS_RANGE: 90,
   THROTTLE_DELAY_SECONDS: 10,
   SEARCH_KEYWORDS: ['bar', 'pool hall', 'poolhall', 'billiards'],
   OMIT_KEYWORDS: ['restaurant'],
