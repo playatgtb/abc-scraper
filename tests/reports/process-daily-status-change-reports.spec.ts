@@ -130,6 +130,7 @@ const downloadReport = async (page: any, reportConfig: ReportConfig, daysAgo: nu
 const hasTransferToRecord = (recordData: RecordData) => {
   return !!recordData.transferTo;
 }
+
 const getSingleLicense = (recordData: RecordData) => {
   return recordData.transferTo || recordData.license;
 }
@@ -173,14 +174,16 @@ const getReportConfig = (date: ReportDate): ReportConfig => {
   };
 }
 
+
+
 // ------------------------------
 
 const Config = {
   START_DAYS_AGO: 0,
-  DAYS_RANGE: 90,
+  DAYS_RANGE: 180,
   THROTTLE_DELAY_SECONDS: 10,
   SEARCH_KEYWORDS: ['bar', 'pool hall', 'poolhall', 'billiards'],
-  OMIT_KEYWORDS: ['restaurant'],
+  OMIT_KEYWORDS: ['restaurant', 'sushi bar', 'bar & grill', 'bar and grill'],
   ABC_LICENSE_TYPES: [
     '40', // On-Sale Beer
     '41', // On-Sale Beer & Wine - Eating Place

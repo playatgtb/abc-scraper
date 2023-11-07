@@ -12,6 +12,7 @@
   "devDependencies": {
     "@playwright/test": "^1.39.0",
     "@types/node": "^20.8.6",
-    "csv-parse": "^5.5.2"
+    "csv-parse": "^5.5.2",
+    "sendmail": "^1.6.1"
   }
 }
