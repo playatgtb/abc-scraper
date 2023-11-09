@@ -174,13 +174,11 @@ const getReportConfig = (date: ReportDate): ReportConfig => {
   };
 }
 
-
-
 // ------------------------------
 
 const Config = {
   START_DAYS_AGO: 0,
-  DAYS_RANGE: 180,
+  DAYS_RANGE: 7,
   THROTTLE_DELAY_SECONDS: 10,
   SEARCH_KEYWORDS: ['bar', 'pool hall', 'poolhall', 'billiards'],
   OMIT_KEYWORDS: ['restaurant', 'sushi bar', 'bar & grill', 'bar and grill'],
