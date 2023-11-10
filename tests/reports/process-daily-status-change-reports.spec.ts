@@ -62,7 +62,7 @@ const handleEmptyReport = (daysAgo: number) => {
   const date = getReportingDate(daysAgo);
   const reportConfig = getReportConfig(date);
   if (!fs.existsSync(reportConfig.saveDir)) {
-    console.log(`creating empty report dir: ${reportConfig.saveDir}`);
+    console.log(`creating empty report dir: ${reportConfig.saveDir} \n`);
     fs.mkdirSync(reportConfig.saveDir, { recursive: true });
     fs.writeFileSync(`${reportConfig.saveDir}/empty.csv`, '');
   }

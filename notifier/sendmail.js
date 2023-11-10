@@ -93,8 +93,8 @@ const convertDate = (date, toLocalFormat=false) => {
 
 var mailOptions = {
   from: 'jhanink+abcscraper@gmail.com',
-  to:'zergworld+abcscraper@gmail.com',
-  //to:'play+abcscraper@gtbilliards.com',
+  //to:'zergworld+abcscraper@gmail.com',
+  to:'play+abcscraper@gtbilliards.com',
   subject: "Weekly ABC Scraper Report",
   text: "WORKING",
 }
