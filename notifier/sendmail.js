@@ -39,7 +39,7 @@ const main = () => {
     });
     transporter.sendMail({
       ...mailOptions,
-      subject: `${mailOptions.subject} ( ${dateToday} )`,
+      subject: `${mailOptions.subject} ( ${convertDate(dateToday, true)} )`,
       text: mailText.join('\n'),
     }, (error, response) => {
       if (error) {
@@ -92,10 +92,10 @@ const convertDate = (date, toLocalFormat=false) => {
 }
 
 var mailOptions = {
-  from: 'jhanink+abcscraper@gmail.com',
+  from: '"Joe Hanink" jhanink+abcscraper@gmail.com',
   //to:'zergworld+abcscraper@gmail.com',
   to:'play+abcscraper@gtbilliards.com',
-  subject: "Weekly ABC Scraper Report",
+  subject: "GT WEEKLY -- ABC Scraper Report",
   text: "WORKING",
 }
 
