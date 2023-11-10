@@ -13,6 +13,8 @@ function main() {
       if (!fs.existsSync(reportConfig.saveDir)) {
         await downloadReport(page, reportConfig, i);
         await processRecords(page, reportConfig);
+      } else {
+        console.log('records already processed \n');
       }
     });
   }
@@ -98,7 +100,7 @@ const screenshot = async (page: any, recordData: RecordData, reportConfig: Repor
   const screenshotLocator = page.locator(SCREENSHOT_ELEMENT_LOCATOR);
   expect(screenshotLocator).toBeVisible({ timeout: 10000 });
   await page.locator(SCREENSHOT_ELEMENT_LOCATOR).screenshot({ path: screenshotPath });
-  console.log(`screenshot saved (${hasTransferTo?'transferTo':'record'}): ${screenshotPath}`);
+  console.log(`screenshot saved (${hasTransferTo?'transferTo':'record'}): ${screenshotPath} \n`);
   console.log(`   -- ${recordData.ownerDBA}`);
 }
 
@@ -135,14 +137,16 @@ const getSingleLicense = (recordData: RecordData) => {
   return recordData.transferTo || recordData.license;
 }
 
-const getReportingDate = (daysAgo: number): ReportDate => {
+const getReportingDate = (daysAgo: number, useToday = false): ReportDate => {
   const tempDate = new Date();
-  tempDate.setDate(tempDate.getDate() - Math.max(Config.START_DAYS_AGO, 3) - daysAgo);
-  const date = tempDate.toISOString().split('T')[0];
-  const _ = date.split('-');
+  if (!useToday) {
+    tempDate.setDate(tempDate.getDate() - Math.max(Config.START_DAYS_AGO, 3) - daysAgo);
+  }
+  const date = tempDate.toLocaleDateString();
+  const _ = date.split('/');
   return {
-    read: `${_[1]}/${_[2]}/${_[0]}`,
-    write: date,
+    read: date,
+    write: `${_[2]}-${_[0].padStart(2, '0')}-${_[1].padStart(2, '0')}`,
   };
 }
 
