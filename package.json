@@ -13,6 +13,7 @@
     "@playwright/test": "^1.39.0",
     "@types/node": "^20.8.6",
     "csv-parse": "^5.5.2",
-    "sendmail": "^1.6.1"
+    "minimist": "^1.2.8",
+    "nodemailer": "^6.9.7"
   }
 }
