@@ -8,9 +8,8 @@ const argv = require('minimist')(process.argv.slice(2));
 const main = () => {
   if (fs.existsSync(Config.LAST_MAIL_SENT_FILE)) {
     const fileDate = fs.readFileSync(Config.LAST_MAIL_SENT_FILE, 'utf8');
-    const lastMailDate = convertDateToLocaleString(fileDate);
-    if (!isFreshMailDate(lastMailDate, true)) {
-      console.log(`--- Mail already sent this week on (${lastMailDate})`);
+    if (!isFreshMailDate(fileDate, true)) {
+      console.log(`--- Mail already sent this week on (${convertDate(fileDate, true)})`);
       return;
     }
   }
@@ -82,9 +81,14 @@ const getReportingDate = (daysAgo, useToday = false) => {
   };
 }
 
-const convertDateToLocaleString = (dateISO) => {
-  const tempDate = new Date(dateISO);
-  return tempDate.toLocaleDateString();
+const convertDate = (date, toLocalFormat=false) => {
+  if (toLocalFormat) {
+    const _ = date.split('-');
+    return `${_[1].padStart(2, '0')}/${_[2].padStart(2, '0')}/${_[0]}`;
+  } else {
+    const _ = date.split('/');
+    return `${_[2]}-${_[0].padStart(2, '0')}-${_[1].padStart(2, '0')}`;
+  }
 }
 
 var mailOptions = {
