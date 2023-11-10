@@ -48,7 +48,7 @@ const handleKeywordMatchScreenshots = async (page: any, recordData: RecordData, 
   if (hasTransferToRecord(recordData)) {
     await navigateToLicensePage(page, recordData, reportConfig);
     const name = await page.locator('dd:near(:text("Primary Owner"))').first().textContent();
-    console.log(`checking transferTo name: ${name}`);
+    console.log(`checking transferTo name: ${name} \n`);
     if (businessNameKeywordMatch(name)) {
       await screenshot(page, recordData, reportConfig);
     }
@@ -100,8 +100,8 @@ const screenshot = async (page: any, recordData: RecordData, reportConfig: Repor
   const screenshotLocator = page.locator(SCREENSHOT_ELEMENT_LOCATOR);
   expect(screenshotLocator).toBeVisible({ timeout: 10000 });
   await page.locator(SCREENSHOT_ELEMENT_LOCATOR).screenshot({ path: screenshotPath });
-  console.log(`screenshot saved (${hasTransferTo?'transferTo':'record'}): ${screenshotPath} \n`);
-  console.log(`   -- ${recordData.ownerDBA}`);
+  console.log(`screenshot saved (${hasTransferTo?'transferTo':'record'}): ${screenshotPath}`);
+  console.log(`   * ${recordData.ownerDBA} \n`);
 }
 
 const throttlePageNavigation = async (page: any) => {
@@ -140,12 +140,12 @@ const getSingleLicense = (recordData: RecordData) => {
 const getReportingDate = (daysAgo: number, useToday = false): ReportDate => {
   const tempDate = new Date();
   if (!useToday) {
-    tempDate.setDate(tempDate.getDate() - Math.max(Config.START_DAYS_AGO, 3) - daysAgo);
+    tempDate.setDate(tempDate.getDate() - Math.max(Config.START_DAYS_AGO, 2) - daysAgo);
   }
   const date = tempDate.toLocaleDateString();
   const _ = date.split('/');
   return {
-    read: date,
+    read: `${_[0]}/${_[1].padStart(2, '0')}/${_[2].padStart(2, '0')}`,
     write: `${_[2]}-${_[0].padStart(2, '0')}-${_[1].padStart(2, '0')}`,
   };
 }

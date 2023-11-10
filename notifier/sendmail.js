@@ -77,7 +77,7 @@ const getReportingDate = (daysAgo, useToday = false) => {
   const date = tempDate.toLocaleDateString();
   const _ = date.split('/');
   return {
-    read: date,
+    read: `${_[0]}/${_[1].padStart(2, '0')}/${_[2].padStart(2, '0')}`,
     write: `${_[2]}-${_[0].padStart(2, '0')}-${_[1].padStart(2, '0')}`,
   };
 }
