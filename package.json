@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npx playwright test",
-    "weekly": "npx playwright test && git add downloads && git commit -am \"weekly processing\" && git push origin main && node notifier/sendmail 7 && git add LAST_MAIL_DATE && git commit -am \"update LAST_MAIL_DATE\" && git push origin main"
+    "weekly": "npx playwright test; git add downloads && git commit -am \"weekly processing\" && git push origin main && node notifier/sendmail 7 && git add LAST_MAIL_DATE && git commit -am \"update LAST_MAIL_DATE\" && git push origin main"
   },
   "keywords": [],
   "author": "",
