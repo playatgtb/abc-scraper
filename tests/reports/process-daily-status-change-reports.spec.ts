@@ -75,7 +75,7 @@ const getLicenseType = (rawRecord: any) => rawRecord[Config.Headers.LICENSE_TYPE
 
 const basicFilterMatch = (recordData: RecordData) => {
   const record = recordData.rawRecord;
-  const isStatusActive = record[Config.Headers.STATUS_CHANGE].split(' ')[1].trim() === 'ACTIVE';
+  const isStatusActive = record[Config.Headers.STATUS_CHANGE].split(' ')[1] === 'ACTIVE';
   const licenseTypeMatch = Config.ABC_LICENSE_TYPES.includes(recordData.licenseType);
   return isStatusActive && licenseTypeMatch;
 }
