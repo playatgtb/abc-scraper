@@ -91,7 +91,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     fs.readdirSync(dir).forEach((file) => {
       if (!file.endsWith('.png')) return;
       count++;
-      if (count === 1) markDownContent = `# ABC Scraper Report (${dateToday.read})\n`;
+      if (count === 1) markDownContent = `# ABC Scraper Weekly Report (${dateToday.read})\n`;
       const license = file.split('.')[0];
       if (count > 1) markDownContent += '\n---\n';
       markDownContent += `## ${license}\n`;
@@ -99,7 +99,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     });
   });
   if (!markDownContent) {
-    markDownContent = '# ABC Scraper Report\n\nNo screenshots found in the last 7 days';
+    markDownContent = '# ABC Scraper Weekly Report\n\nNo screenshots found in the last 7 days';
   }
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, markDownContent);
 }
