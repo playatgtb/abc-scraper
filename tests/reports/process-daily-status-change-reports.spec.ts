@@ -48,7 +48,6 @@ const handleKeywordMatchScreenshots = async (page: any, recordData: RecordData, 
   if (hasTransferToRecord(recordData)) {
     await navigateToLicensePage(page, recordData, reportConfig);
     const name = await page.locator('dd:near(:text("Primary Owner"))').first().textContent();
-    console.log(`checking transferTo name: ${name} \n`);
     if (businessNameKeywordMatch(name)) {
       await screenshot(page, recordData, reportConfig);
     }

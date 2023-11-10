@@ -101,7 +101,7 @@ var mailOptions = {
 
 const Config = {
   START_DAYS_AGO: 0,
-  DAYS_RANGE: 14,
+  DAYS_RANGE: 7,
   SEND_MAIL: true,
   GMAIL_USER: 'jhanink@gmail.com',
   GMAIL_PASS_KEY: 'ryws myub jlnf qexh',
