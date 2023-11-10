@@ -142,7 +142,7 @@ var mailOptions = {
   from: '"Joe Hanink" jhanink+abcscraper@gmail.com',
   //to:'zergworld+abcscraper@gmail.com',
   to:'play+abcscraper@gtbilliards.com',
-  subject: "GT WEEKLY -- ABC Scraper Report",
+  subject: "GT WEEKLY -- ABC Scraper Weekly Report",
   text: "WORKING",
 }
 
