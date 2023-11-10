@@ -101,6 +101,9 @@ const screenshot = async (page: any, recordData: RecordData, reportConfig: Repor
   await page.locator(SCREENSHOT_ELEMENT_LOCATOR).screenshot({ path: screenshotPath });
   console.log(`screenshot saved (${hasTransferTo?'transferTo':'record'}): ${screenshotPath}`);
   console.log(`   * ${recordData.ownerDBA} \n`);
+
+  // TODO: write field level data to sibling <licenseNumber>.json file
+  // for later processing in the notification email
 }
 
 const throttlePageNavigation = async (page: any) => {
