@@ -93,11 +93,9 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const license = file.split('.')[0];
       const metadata = fs.readFileSync(`${dir}/${license}.json`);
       const mapsUrl = JSON.parse(metadata).mapsUrl;
-      content = `
-        ## ${license}\n
-        ${mapsUrl}\n---\n
-        ![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n
-      `;
+      content += `## ${license}\n`;
+      content += `![${mapsUrl}](${mapsUrl})<br>`
+      content += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`
     });
   });
   const title = '# ABC Scraper Weekly Report';
