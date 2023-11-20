@@ -60,6 +60,10 @@ const sendEmail = (screenshotDirUrls) => {
       emailBodyText += `${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/email-report-${getReportingDate(0, true)?.write}.md`;
     }
     const mailConfig = getMailConfig();
+    if (!mailConfig) {
+      console.log("no .mail-config file found");
+      return;
+    }
     const dateToday = getReportingDate(0, true)?.write;
     const transporter = nodemailer.createTransport({
       service: 'gmail',
