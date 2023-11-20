@@ -95,7 +95,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const mapsUrl = JSON.parse(metadata).mapsUrl;
       content = `
         ## ${license}\n
-        ${mapsUrl}<br>
+        ${mapsUrl}\n---\n
         ![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n
       `;
     });
