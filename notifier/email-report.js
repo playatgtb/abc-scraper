@@ -1,5 +1,4 @@
 
-const { dir } = require('console');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
 const argv = require('minimist')(process.argv.slice(2));
@@ -40,7 +39,7 @@ const main = () => {
   else if (Config.SEND_MAIL)
   // MODE 0 - send mail notification
   {
-    sendEmail(screenshotDirs, screenshotDirUrls);
+    sendEmail(screenshotDirUrls);
   }
   else
   // do nothing
@@ -51,7 +50,7 @@ const main = () => {
 
 //------------------------
 
-const sendEmail = (screenshotDirs, screenshotDirUrls) => {
+const sendEmail = (screenshotDirUrls) => {
   let emailBodyText;
     if (!screenshotDirUrls.length) {
       emailBodyText = `No screenshots found in the last ${CONFIG_DAYS} days`;
@@ -60,12 +59,13 @@ const sendEmail = (screenshotDirs, screenshotDirUrls) => {
       emailBodyText = Config.EMAIL_HEADER;
       emailBodyText += `${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/email-report-${getReportingDate(0, true)?.write}.md`;
     }
+    const mailConfig = getMailConfig();
     const dateToday = getReportingDate(0, true)?.write;
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'jhanink@gmail.com',
-        pass: Config.GMAIL_PASS_KEY,
+        user: mailConfig.MAIL_USER,
+        pass: mailConfig.MAIL_PASS_KEY,
       },
     });
     transporter.sendMail({
@@ -138,27 +138,38 @@ const convertDate = (date, toLocalFormat=false) => {
   }
 }
 
+/**
+ * 
+ * @returns { MAIL_USER, MAIL_PASS_KEY }
+ */
+const getMailConfig = () => {
+  const filename = `${Config.DOWNLOADS_DIR}/${Config.MAIL_CONFIG_FILE}`;
+  if (!fs.existsSync(filename)) return;
+  return JSON.parse(fs.readFileSync(filename));
+}
+
 var mailOptions = {
   from: '"ABC Weekly Report" jhanink+abcscraper@gmail.com',
-  //to:'zergworld+abcscraper@gmail.com',
-  to:'play+abcscraper@gtbilliards.com',
+  to:[
+    'zergworld+abcscraper@gmail.com',
+    //'play+abcscraper@gtbilliards.com',
+    //'jre9754@gmail.com',
+  ],
   subject: "GT WEEKLY -- ABC Scraper Weekly Report",
   text: "WORKING",
 }
 
 const Config = {
+  DOWNLOADS_DIR: './',
   START_DAYS_AGO: 0,
   DAYS_RANGE: 7,
   SEND_MAIL: true,
-  // TODO: move to file -------
-  GMAIL_USER: 'jhanink@gmail.com',
-  GMAIL_PASS_KEY: 'ryws myub jlnf qexh',
-  // --------------------------
+  MAIL_CONFIG_FILE: '.mail-config',
   GITHUB_SCREENSHOTS_URL_BASE: 'https://raw.githubusercontent.com/playatgtb/abc-scraper/main/downloads',
   GITHUB_WEEKLY_REPORT_URL_BASE: 'https://github.com/playatgtb/abc-scraper/tree/main/email-reports',
   LAST_MAIL_SENT_FILE: './LAST_MAIL_DATE',
   EMAIL_REPORTS_DIR: `./email-reports`,
-  EMAIL_HEADER: `Hey John,\nThese are the locations that changed hands in the past week. Tap on the link below to learn more about each location.\n\n`,
+  EMAIL_HEADER: `Hey John,\nThese are the locations that changed status in the past week. Tap on the link below to learn more about each location.\n\n`,
 }
 
 //------------------------
