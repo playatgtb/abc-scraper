@@ -93,14 +93,13 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const license = file.split('.')[0];
       const metadata = fs.readFileSync(`${dir}/${license}.json`);
       const mapsUrl = JSON.parse(metadata).mapsUrl;
-      content += `## ${license}\n`;
-      content += `![${mapsUrl}](${mapsUrl})<br>`
-      content += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`
+      if (!content) content = `## ${license}\n`;
+      content += `![View in Maps]](${mapsUrl})\n`;
+      content += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
     });
   });
   const title = '# ABC Scraper Weekly Report';
-  content = content
-    ? `${title} (${dateToday.read})\n${content}`
+  content = content ? `${title} (${dateToday.read})\n${content}`
     : `${title}\n\nNo screenshots found in the last ${Config.DAYS_RANGE} days`;
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, content);
 }
@@ -141,8 +140,8 @@ const convertDate = (date, toLocalFormat=false) => {
 
 var mailOptions = {
   from: '"ABC Weekly Report" jhanink+abcscraper@gmail.com',
-  //to:'zergworld+abcscraper@gmail.com',
-  to:'play+abcscraper@gtbilliards.com',
+  to:'zergworld+abcscraper@gmail.com',
+  //to:'play+abcscraper@gtbilliards.com',
   subject: "GT WEEKLY -- ABC Scraper Weekly Report",
   text: "WORKING",
 }
