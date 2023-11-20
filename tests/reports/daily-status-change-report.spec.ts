@@ -14,8 +14,9 @@ function main() {
         await downloadReport(page, reportConfig, i);
         await processRecords(page, reportConfig);
       } else {
-        console.log('records already processed \n');
+        console.log('records already processed');
       }
+      console.log('\n');
     });
   }
 }
@@ -45,15 +46,19 @@ const processRecords = async (page: any, reportConfig: ReportConfig) => {
 //     - if match, take screenshot
 
 const handleKeywordMatchScreenshots = async (page: any, recordData: RecordData, reportConfig: ReportConfig) => {
-  if (hasTransferToRecord(recordData)) {
+  let name = '';
+  const hasTransfer = hasTransferToRecord(recordData);
+  let keywordMatch = businessNameKeywordMatch(recordData.ownerDBA);
+  if (hasTransfer || keywordMatch) { 
     await navigateToLicensePage(page, recordData, reportConfig);
-    const name = await page.locator('dd:near(:text("Primary Owner"))').first().textContent();
-    if (businessNameKeywordMatch(name)) {
-      await screenshot(page, recordData, reportConfig);
-    }
-  } else if (businessNameKeywordMatch(recordData.ownerDBA)) {
-    await navigateToLicensePage(page, recordData, reportConfig);
+  }
+  if (hasTransfer) {
+    name = await page.locator(ELEMENT_LOCATOR_OWNER_NAME).first().textContent();
+    keywordMatch = businessNameKeywordMatch(name);
+  }
+  if (keywordMatch) {
     await screenshot(page, recordData, reportConfig);
+    await saveRecordMetadata(page, recordData, reportConfig);
   }
 }
 
@@ -96,14 +101,19 @@ const screenshot = async (page: any, recordData: RecordData, reportConfig: Repor
   const hasTransferTo = hasTransferToRecord(recordData);
   const singleLicense = getSingleLicense(recordData);
   const screenshotPath = `${reportConfig.saveDir}-screenshots/${singleLicense}.png`;
-  const screenshotLocator = page.locator(SCREENSHOT_ELEMENT_LOCATOR);
+  const screenshotLocator = page.locator(ELEMENT_LOCATOR_FOR_SCREENSHOT);
   expect(screenshotLocator).toBeVisible({ timeout: 10000 });
-  await page.locator(SCREENSHOT_ELEMENT_LOCATOR).screenshot({ path: screenshotPath });
+  await page.locator(ELEMENT_LOCATOR_FOR_SCREENSHOT).screenshot({ path: screenshotPath });
   console.log(`screenshot saved (${hasTransferTo?'transferTo':'record'}): ${screenshotPath}`);
-  console.log(`   * ${recordData.ownerDBA} \n`);
+  console.log(`   * ${recordData.ownerDBA}`);
+}
 
-  // TODO: write field level data to sibling <licenseNumber>.json file
-  // for later processing in the notification email
+const saveRecordMetadata = async (page: any, recordData: RecordData, reportConfig: ReportConfig) => {
+  const singleLicense = getSingleLicense(recordData);
+  const metadataPath = `${reportConfig.saveDir}-screenshots/${singleLicense}.json`;
+  const metadata = JSON.stringify(recordData);
+  await fs.writeFileSync(metadataPath, metadata);
+  console.log(`metadata saved: ${metadataPath}`);
 }
 
 const throttlePageNavigation = async (page: any) => {
@@ -122,7 +132,7 @@ const downloadReport = async (page: any, reportConfig: ReportConfig, daysAgo: nu
     await throttlePageNavigation(page);
   }
   await page.goto(reportConfig.statusChangesUrl);
-  const button = page.locator('button:has-text("Download Report (CSV)")')
+  const button = page.locator(ELEMENT_LOCATOR_DOWNLOAD_CSV_BUTTON);
   expect(button).toBeVisible({ timeout: 10000 });
 
   const downloadPromise = page.waitForEvent('download');
@@ -159,6 +169,8 @@ const getRecordData = (record: any): RecordData => {
   const hasTransferToRecord = record[Config.Headers.TRANSFER].includes('/');
   const transferToRecord = hasTransferToRecord && record[Config.Headers.TRANSFER].split('/')[1].trim();
   const transferTo = transferToRecord && transferToRecord.split('-')[1].trim();
+  const address = `${record[Config.Headers.ADDRESS_STREET]}, ${record[Config.Headers.ADDRESS_CITY]}`;
+  const mapsUrl = `https://maps.google.com?q=${encodeURIComponent(address)}`;
 
   return {
     ownerDBA,
@@ -166,6 +178,7 @@ const getRecordData = (record: any): RecordData => {
     licenseType,
     transferTo,
     rawRecord: record,
+    mapsUrl,
   }
 }
 
@@ -202,9 +215,10 @@ const Config = {
     TRANSFER: 'Transfer-From/To',
     OWNER_DBA: 'Primary Owner and Premises Addr.',
     LICENSE_NUMBER: 'License Number',
-    ZIP_CODE: 'Zip Code',
+    ADDRESS_STREET: 'Prem Street',
+    ADDRESS_CITY: 'City',
+    ADDRESS_ZIP: 'Zip Code',
     COUNTY_CODE: 'County',
-    CITY: 'City',
   },
 };
 
@@ -223,6 +237,7 @@ type RecordData = {
   license: string,
   licenseType: string,
   transferTo: string,
+  mapsUrl: string,
   rawRecord: any,
 }
 type ReportDate = {read: string, write: string};
@@ -233,7 +248,9 @@ const URL_STATUS_CHANGES_BASE = `https://www.abc.ca.gov/licensing/licensing-repo
 const URL_SINGLE_LICENSE_BASE = `https://www.abc.ca.gov/licensing/license-lookup/single-license/?RPTTYPE=12&LICENSE=`;
 const SPACES_24 = '                        ';
 const REPORT_DOWNLOAD_FILENAME = 'report-status-changes.csv';
-const SCREENSHOT_ELEMENT_LOCATOR = '#et-boc .et_pb_section_0';
+const ELEMENT_LOCATOR_FOR_SCREENSHOT = '#et-boc .et_pb_section_0';
+const ELEMENT_LOCATOR_DOWNLOAD_CSV_BUTTON = 'button:has-text("Download Report (CSV)")';
+const ELEMENT_LOCATOR_OWNER_NAME = 'dd:near(:text("Primary Owner"))';
 
 // ------------------------------
 

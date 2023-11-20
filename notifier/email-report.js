@@ -85,23 +85,26 @@ const sendEmail = (screenshotDirs, screenshotDirUrls) => {
 
 const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
   const dateToday = getReportingDate(0, true);
-  let markDownContent;
-  let count = 0;
+  let content;
   screenshotDirs.forEach((dir, dirIndex) => {
     fs.readdirSync(dir).forEach((file) => {
       if (!file.endsWith('.png')) return;
-      count++;
-      if (count === 1) markDownContent = `# ABC Scraper Weekly Report (${dateToday.read})\n`;
+      console.log({dir, file})
       const license = file.split('.')[0];
-      if (count > 1) markDownContent += '\n---\n';
-      markDownContent += `## ${license}\n`;
-      markDownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})`;
+      const metadata = fs.readFileSync(`${dir}/${license}.json`);
+      const mapsUrl = JSON.parse(metadata).mapsUrl;
+      content = `
+        ## ${license}\n
+        ${mapsUrl}<br>
+        ![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n
+      `;
     });
   });
-  if (!markDownContent) {
-    markDownContent = '# ABC Scraper Weekly Report\n\nNo screenshots found in the last 7 days';
-  }
-  fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, markDownContent);
+  const title = '# ABC Scraper Weekly Report';
+  content = content
+    ? `${title} (${dateToday.read})\n${content}`
+    : `${title}\n\nNo screenshots found in the last ${Config.DAYS_RANGE} days`;
+  fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, content);
 }
 
 const isFreshMailDate = (fileDay, debug = false) => {
@@ -112,7 +115,7 @@ const isFreshMailDate = (fileDay, debug = false) => {
   if (debug) {
     console.log({ today, fileDay, delayDays: Config.DAYS_RANGE, diffDays, debug })
   }
-  return diffDays > Config.DAYS_RANGE;
+  return diffDays >= Config.DAYS_RANGE;
 }
 
 const getReportingDate = (daysAgo, useToday = false) => {

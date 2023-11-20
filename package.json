@@ -6,9 +6,11 @@
   "scripts": {
     "test": "npx playwright test",
     "weekly": "npm test; npm run weekly-git && npm run notifier",
+    "weekly-report": "npm test; npm run notifier-report",
+    "weekly-email": "npm test; npm run notifier-email",
     "weekly-git": "git add downloads && git commit -am \"weekly processing\" && git push origin main",
-    "notifier": "npm run notifier-markdown && npm run notifier-email && npm run notifier-git",
-    "notifier-markdown": "node notifier/email-report 7 1",
+    "notifier": "npm run notifier-report && npm run notifier-email && npm run notifier-git",
+    "notifier-report": "node notifier/email-report 7 1",
     "notifier-email": "node notifier/email-report 7 0",
     "notifier-git": "git add email-reports && git add LAST_MAIL_DATE && git commit -am \"update notifiers\" && git push origin main"
   },
