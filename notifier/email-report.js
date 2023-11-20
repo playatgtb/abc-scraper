@@ -150,8 +150,10 @@ const Config = {
   START_DAYS_AGO: 0,
   DAYS_RANGE: 7,
   SEND_MAIL: true,
+  // TODO: move to file -------
   GMAIL_USER: 'jhanink@gmail.com',
   GMAIL_PASS_KEY: 'ryws myub jlnf qexh',
+  // --------------------------
   GITHUB_SCREENSHOTS_URL_BASE: 'https://raw.githubusercontent.com/playatgtb/abc-scraper/main/downloads',
   GITHUB_WEEKLY_REPORT_URL_BASE: 'https://github.com/playatgtb/abc-scraper/tree/main/email-reports',
   LAST_MAIL_SENT_FILE: './LAST_MAIL_DATE',
