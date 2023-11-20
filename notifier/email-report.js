@@ -94,7 +94,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const metadata = fs.readFileSync(`${dir}/${license}.json`);
       const mapsUrl = JSON.parse(metadata).mapsUrl;
       if (!content) content = `## ${license}\n`;
-      content += `![View in Maps]](${mapsUrl})\n`;
+      content += `![View in Maps](${mapsUrl})\n`;
       content += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
     });
   });
