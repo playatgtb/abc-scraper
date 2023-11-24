@@ -6,13 +6,7 @@ const argv = require('minimist')(process.argv.slice(2));
 //------------------------
 
 const main = () => {
-  if (fs.existsSync(Config.LAST_MAIL_SENT_FILE)) {
-    const fileDate = fs.readFileSync(Config.LAST_MAIL_SENT_FILE, 'utf8');
-    if (!isFreshMailDate(fileDate, true)) {
-      console.log(`--- Mail already sent this week on (${convertDate(fileDate, true)})`);
-      return;
-    }
-  }
+
 
   // CLI Input Options
   // rolling report period days, e.g.: 7
@@ -50,7 +44,19 @@ const main = () => {
 
 //------------------------
 
+const mailAlreadySent = () => {
+  if (fs.existsSync(Config.LAST_MAIL_SENT_FILE)) {
+    const fileDate = fs.readFileSync(Config.LAST_MAIL_SENT_FILE, 'utf8');
+    if (!isFreshMailDate(fileDate, true)) {
+      console.log(`--- Mail already sent this period on (${convertDate(fileDate, true)})`);
+      return true;
+    }
+  }
+  return false;
+}
+
 const sendEmail = (screenshotDirUrls) => {
+  if (mailAlreadySent()) return;
   let emailBodyText;
     if (!screenshotDirUrls.length) {
       emailBodyText = `No screenshots found in the last ${CONFIG_DAYS} days`;
@@ -94,11 +100,14 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     fs.readdirSync(dir).forEach((file) => {
       if (!file.endsWith('.png')) return;
       console.log({dir, file})
-      const license = file.split('.')[0];
-      const metadata = fs.readFileSync(`${dir}/${license}.json`);
-      const mapsUrl = JSON.parse(metadata).mapsUrl;
+      const FILENAME = file.split('.')[0];
+      const metadata = JSON.parse(fs.readFileSync(`${dir}/${FILENAME}.json`));
+      const mapsUrl = metadata.mapsUrl;
+      const license = metadata.transferTo || FILENAME;
+      const licenseUrl = `${Config.SINGLE_LICENSE_ULR_BASE}${license}`;
       if (!content) content = `## ${license}\n`;
       content += `[view map](${mapsUrl})\n`;
+      content += `[license detail page](${licenseUrl})\n`;
       content += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
     });
   });
@@ -143,7 +152,7 @@ const convertDate = (date, toLocalFormat=false) => {
 }
 
 /**
- * 
+ *
  * @returns { MAIL_USER, MAIL_PASS_KEY }
  */
 const getMailConfig = () => {
@@ -171,6 +180,7 @@ const Config = {
   MAIL_CONFIG_FILE: '.mail-config',
   GITHUB_SCREENSHOTS_URL_BASE: 'https://raw.githubusercontent.com/playatgtb/abc-scraper/main/downloads',
   GITHUB_WEEKLY_REPORT_URL_BASE: 'https://github.com/playatgtb/abc-scraper/tree/main/email-reports',
+  SINGLE_LICENSE_ULR_BASE: `https://www.abc.ca.gov/licensing/license-lookup/single-license/?RPTTYPE=12&LICENSE=`,
   LAST_MAIL_SENT_FILE: './LAST_MAIL_DATE',
   EMAIL_REPORTS_DIR: `./email-reports`,
   EMAIL_HEADER: `Hey John,\nThese are the locations that changed status in the past week. Tap on the link below to learn more about each location.\n\n`,

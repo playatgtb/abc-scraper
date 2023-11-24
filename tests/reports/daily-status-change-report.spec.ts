@@ -49,7 +49,7 @@ const handleKeywordMatchScreenshots = async (page: any, recordData: RecordData, 
   let name = '';
   const hasTransfer = hasTransferToRecord(recordData);
   let keywordMatch = businessNameKeywordMatch(recordData.ownerDBA);
-  if (hasTransfer || keywordMatch) { 
+  if (hasTransfer || keywordMatch) {
     await navigateToLicensePage(page, recordData, reportConfig);
   }
   if (hasTransfer) {
@@ -171,6 +171,7 @@ const getRecordData = (record: any): RecordData => {
   const transferTo = transferToRecord && transferToRecord.split('-')[1].trim();
   const address = `${record[Config.Headers.ADDRESS_STREET]}, ${record[Config.Headers.ADDRESS_CITY]}`;
   const mapsUrl = `https://maps.google.com?q=${encodeURIComponent(address)}`;
+  const licensePageUrl = `${URL_SINGLE_LICENSE_BASE}${transferTo || license}`;
 
   return {
     ownerDBA,
@@ -179,6 +180,7 @@ const getRecordData = (record: any): RecordData => {
     transferTo,
     rawRecord: record,
     mapsUrl,
+    licensePageUrl,
   }
 }
 
@@ -238,6 +240,7 @@ type RecordData = {
   licenseType: string,
   transferTo: string,
   mapsUrl: string,
+  licensePageUrl: string,
   rawRecord: any,
 }
 type ReportDate = {read: string, write: string};
