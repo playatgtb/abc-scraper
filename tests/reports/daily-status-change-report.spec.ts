@@ -167,6 +167,7 @@ const getRecordData = (record: any): RecordData => {
   const licenseType = getLicenseType(record);
   const license = record[Config.Headers.LICENSE_NUMBER];
   const hasTransferToRecord = record[Config.Headers.TRANSFER].includes('/');
+  const transfer = record[Config.Headers.TRANSFER];
   const transferToRecord = hasTransferToRecord && record[Config.Headers.TRANSFER].split('/')[1].trim();
   const transferTo = transferToRecord && transferToRecord.split('-')[1].trim();
   const address = `${record[Config.Headers.ADDRESS_STREET]}, ${record[Config.Headers.ADDRESS_CITY]}`;
@@ -177,6 +178,7 @@ const getRecordData = (record: any): RecordData => {
     ownerDBA,
     license,
     licenseType,
+    transfer,
     transferTo,
     rawRecord: record,
     mapsUrl,
@@ -238,6 +240,7 @@ type RecordData = {
   ownerDBA: string,
   license: string,
   licenseType: string,
+  transfer: string,
   transferTo: string,
   mapsUrl: string,
   licensePageUrl: string,

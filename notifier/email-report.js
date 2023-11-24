@@ -105,7 +105,8 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const mapsUrl = metadata.mapsUrl;
       const license = metadata.transferTo || FILENAME;
       const licenseUrl = `${Config.SINGLE_LICENSE_ULR_BASE}${license}`;
-      if (!content) content = `## ${license}\n`;
+      const transfer = metadata.transfer;
+      if (!content) content = `## ${license}, ${transfer ? `Transfer: ${transfer}` : ''}\n`;
       content += `### [view map](${mapsUrl})\n`;
       content += `### [license detail page](${licenseUrl})\n`;
       content += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
