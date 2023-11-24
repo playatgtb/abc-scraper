@@ -96,10 +96,12 @@ const sendEmail = (screenshotDirUrls) => {
 const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
   const dateToday = getReportingDate(0, true);
   let content;
+  let count = 0;
   screenshotDirs.forEach((dir, dirIndex) => {
     fs.readdirSync(dir).forEach((file) => {
       if (!file.endsWith('.png')) return;
       console.log({dir, file})
+      count++;
       const FILENAME = file.split('.')[0];
       const metadata = JSON.parse(fs.readFileSync(`${dir}/${FILENAME}.json`));
       const mapsUrl = metadata.mapsUrl;
@@ -107,12 +109,13 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const licenseUrl = `${Config.SINGLE_LICENSE_ULR_BASE}${license}`;
       const transfer = metadata.transfer;
       content = content || '';
-      content += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
+      content += `### ${count}) ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
       content += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
     });
   });
-  const title = '# ABC Scraper - Weekly Report';
-  content = content ? `${title} (${dateToday.read})\n${content}`
+  const title = '# ABC Scraper - Weekly Report\n#';
+  const subheading = `### ${count} listings of interest found in the last ${Config.DAYS_RANGE} days`;
+  content = content ? `${title} (${dateToday.read}) ${subheading} ${content}`
     : `${title}\n\nNo screenshots found in the last ${Config.DAYS_RANGE} days`;
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, content);
 }
