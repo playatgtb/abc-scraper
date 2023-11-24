@@ -111,7 +111,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       content += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
     });
   });
-  const title = '# ABC Scraper Weekly Report';
+  const title = '# ABC Scraper - Weekly Report';
   content = content ? `${title} (${dateToday.read})\n${content}`
     : `${title}\n\nNo screenshots found in the last ${Config.DAYS_RANGE} days`;
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, content);
