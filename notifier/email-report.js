@@ -115,7 +115,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       markdownContent = markdownContent || '';
       htmlContent = htmlContent || '';
       markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
-      htmlContent += `<div class="title"><span class="darkgray">${license} ${transfer ? `(transfer)` : ''}</span> | <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div>\n`;
+      htmlContent += `<div class="item-heading">${license} ${transfer ? `(transfer)` : ''} | <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div>\n`;
       markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
       htmlContent += `<img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />\n`;
     });
@@ -126,10 +126,11 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
   htmlHead = `
     <style>
     body {color: black}
-    a {text-decoration: none; color: darkgray;}
+    .item-heading a {text-decoration: none; color: darkgray !important;}
     .darkgray { color: darkgray; }
     .header { font-size: 1.5rem; }
-    .title { display: inline-block; font-size: 2rem; font-weight: bold; padding: 5px 25px; border: 1px solid black; border-radius: 30px; background-color: black; color: white; }
+    .title { font-size: 2rem; color: black;}
+    .item-heading { display: inline-block; font-size: 1.5rem; font-weight: bold; padding: 5px 25px; border: 1px solid black; border-radius: 30px; background-color: black; color: white; }
     </style>
   `;
   htmlContent = htmlContent ? `<h4>${dateToday.read}</h4><div class="title">${title} - ${count} listings</div><p/><p/><html><head>${htmlHead}</head><body>${htmlContent}</body></html>`
