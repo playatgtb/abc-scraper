@@ -129,7 +129,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     a {text-decoration: none; color: darkgray;}
     .darkgray { color: darkgray; }
     .header { font-size: 1.5rem; }
-    .title { font-size: 2rem; font-weight: bold; padding: 5px 10px; border: 1px solid black; border-radius: 20px; background-color: black; color: white; }
+    .title { font-size: 2rem; font-weight: bold; padding: 5px 10px; border: 1px solid black; border-radius: 30px; background-color: black; color: white; }
     </style>
   `;
   htmlContent = htmlContent ? `<h4>${dateToday.read}</h4><div class="title">${title} - ${count} listings</div><p/><p/><html><head>${htmlHead}</head><body>${htmlContent}</body></html>`
