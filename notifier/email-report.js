@@ -133,7 +133,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     .title { font-size: 2rem; color: black;}
     .item-links { display: inline-block; font-size: 1.5rem; font-weight: bold; padding: 5px 25px; border: 1px solid black; border-radius: 30px; background-color: black; color: white; }
     .item-heading { margin: 30px 0px 10px }
-    .license { display: inline-block; font-size: 1.5rem; font-weight: bold; color: black; }
+    .license { display: inline-block; font-size: 1.5rem; font-weight: bold; color: black; margin: 10px; }
 
     </style>
   `;
