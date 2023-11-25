@@ -85,7 +85,7 @@ const sendEmail = (screenshotDirUrls) => {
       ...mailOptions,
       to: mailConfig.MAIL_TO,
       subject: `${mailOptions.subject} ( ${convertDate(dateToday, true)} )`,
-      text: emailBodyText,
+      html: emailBodyText,
     }, (error, response) => {
       if (error) {
         console.log('Error', error);
