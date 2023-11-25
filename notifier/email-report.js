@@ -129,9 +129,10 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     a {text-decoration: none; color: darkgray;}
     .darkgray { color: darkgray; }
     .header { font-size: 1.5rem; }
+    .title { font-size: 2rem; font-weight: bold; padding: 5px; border: 1px solid black; border-radius: 5px; background-color: black; color: white; }
     </style>
   `;
-  htmlContent = htmlContent ? `<h4>${dateToday.read}</h4><div style="font-size:2rem;">${title} - ${count} listings</div><p/><p/><html><head>${htmlHead}</head><body>${htmlContent}</body></html>`
+  htmlContent = htmlContent ? `<h4>${dateToday.read}</h4><div class="title">${title} - ${count} listings</div><p/><p/><html><head>${htmlHead}</head><body>${htmlContent}</body></html>`
     : `${title}<br><br>No screenshots found in the last ${Config.DAYS_RANGE} days`;
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, markdownContent);
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.html`, htmlContent);
