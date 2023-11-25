@@ -126,7 +126,8 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
   htmlHead = `
     <style>
     body {color: black}
-    .item-heading a {text-decoration: none; color: darkgray !important;}
+    .item-heading a {text-decoration: none; color: orange !important;}
+    .item-heading a:hover { color: red !important; }
     .darkgray { color: darkgray; }
     .header { font-size: 1.5rem; }
     .title { font-size: 2rem; color: black;}
