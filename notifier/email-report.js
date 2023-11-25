@@ -115,7 +115,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       markdownContent = markdownContent || '';
       htmlContent = htmlContent || '';
       markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
-      htmlContent += `<h3>${license} ${transfer ? `(transfer)` : ''} | <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></h3>\n`;
+      htmlContent += `<div style="font-size:3rem">${license} ${transfer ? `(transfer)` : ''} | <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div>\n`;
       markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
       htmlContent += `<img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />\n`;
     });
