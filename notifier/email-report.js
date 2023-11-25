@@ -137,7 +137,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     .item-separator { height: 30px; }
     </style>
   `;
-  htmlContent = htmlContent ? `<h4>${dateToday.read}</h4><div class="title">${title} - ${count} listings</div><html><head>${htmlHead}</head><body>${htmlContent}</body></html>`
+  htmlContent = htmlContent ? `<div class="title">${title} - ${count} listings</div><html><head>${htmlHead}</head><body>${htmlContent}</body></html>`
     : `${title}<br><br>No screenshots found in the last ${Config.DAYS_RANGE} days`;
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, markdownContent);
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.html`, htmlContent);
