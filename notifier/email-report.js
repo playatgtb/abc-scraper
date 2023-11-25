@@ -66,7 +66,7 @@ const sendEmail = (screenshotDirUrls) => {
       emailBodyText += Config.EMAIL_HEADER;
       emailBodyText += `${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/email-report-${getReportingDate(0, true)?.write}.md`;
       emailBodyText += '<br><h1 style="color:green">Hello</h1>'
-      emailBodyText = '</body></html>';
+      emailBodyText += '</body></html>';
     }
     const mailConfig = getMailConfig();
     if (!mailConfig) {
