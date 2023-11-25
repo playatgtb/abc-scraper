@@ -115,7 +115,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       markdownContent = markdownContent || '';
       htmlContent = htmlContent || '';
       markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
-      htmlContent += `<div class="header"><span class="darkgray">${license} ${transfer ? `(transfer)` : ''}</span> | <a style="color:darkgray" href="${mapsUrl}">view map</a> | <a style="color:darkgray" href="${licenseUrl}">view license page</a></div>\n`;
+      htmlContent += `<div class="header"><span class="darkgray">${license} ${transfer ? `(transfer)` : ''}</span> | <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div>\n`;
       markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
       htmlContent += `<img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />\n`;
     });
@@ -125,7 +125,8 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     : `${title}\n\nNo screenshots found in the last ${Config.DAYS_RANGE} days`;
   htmlHead = `
     <style>
-    a { color: darkgray; }
+    body {color: black}
+    a {text-decoration: none; color: darkgray;}
     .darkgray { color: darkgray; }
     .header { font-size: 1.5rem; }
     </style>
