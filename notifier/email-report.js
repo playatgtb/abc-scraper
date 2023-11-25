@@ -123,7 +123,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
   const title = `ABC Scraper - Weekly Report`;
   markdownContent = markdownContent ? `#### ${dateToday.read}\n# ${title} - ${count} listings\n ${markdownContent}`
     : `${title}\n\nNo screenshots found in the last ${Config.DAYS_RANGE} days`;
-  htmlContent = htmlContent ? `<h4>${dateToday.read}</h4><div style="font-size:2rem;color:orange">${title} - ${count} listings</div>${htmlContent}`
+  htmlContent = htmlContent ? `<h4>${dateToday.read}</h4><div style="font-size:2rem;color:orange">${title} - ${count} listings</div><p/><p/>${htmlContent}`
     : `${title}<br><br>No screenshots found in the last ${Config.DAYS_RANGE} days`;
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, markdownContent);
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.html`, htmlContent);
