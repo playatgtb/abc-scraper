@@ -122,7 +122,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     });
   });
   const title = `ABC Scraper - Weekly Report`;
-  markdownContent = markdownContent ? `#### ${dateToday.read}\n# ${title} - ${count} listings\n ${markdownContent}`
+  markdownContent = markdownContent ? `# ${title} - ${count} listings\n ${markdownContent}`
     : `${title}\n\nNo screenshots found in the last ${Config.DAYS_RANGE} days`;
   htmlHead = `
     <style>
