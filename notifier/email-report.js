@@ -114,6 +114,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const transfer = metadata.transfer;
       markdownContent = markdownContent || '';
       htmlContent = htmlContent || '';
+      htmlContent += '<div class="item-separator"></div>\n';
       markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
       htmlContent += `<span class="license">${license} ${transfer ? `(transfer)` : ''}</span> <div class="item-heading"> <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div>\n`;
       markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
@@ -133,9 +134,10 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     .title { font-size: 2rem; color: black;}
     .item-heading { display: inline-block; font-size: 1.5rem; font-weight: bold; padding: 5px 25px; border: 1px solid black; border-radius: 30px; background-color: black; color: white; }
     .license { font-size: 1.5rem; font-weight: bold; color: black; }
+    .item-separator { height: 30px; }
     </style>
   `;
-  htmlContent = htmlContent ? `<h4>${dateToday.read}</h4><div class="title">${title} - ${count} listings</div><p/><p/><html><head>${htmlHead}</head><body>${htmlContent}</body></html>`
+  htmlContent = htmlContent ? `<h4>${dateToday.read}</h4><div class="title">${title} - ${count} listings</div><html><head>${htmlHead}</head><body>${htmlContent}</body></html>`
     : `${title}<br><br>No screenshots found in the last ${Config.DAYS_RANGE} days`;
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, markdownContent);
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.html`, htmlContent);
