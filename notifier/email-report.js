@@ -62,11 +62,9 @@ const sendEmail = (screenshotDirUrls) => {
       emailBodyText = `No screenshots found in the last ${CONFIG_DAYS} days`;
       console.log(emailBodyText);
     } else {
-      emailBodyText = '<html><body>';
-      emailBodyText += Config.EMAIL_HEADER;
+      emailBodyText = Config.EMAIL_HEADER;
       emailBodyText += `${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/email-report-${getReportingDate(0, true)?.write}.md`;
       emailBodyText += '<br><h1 style="color:green">Hello</h1>'
-      emailBodyText += '</body></html>';
     }
     const mailConfig = getMailConfig();
     if (!mailConfig) {
@@ -99,7 +97,8 @@ const sendEmail = (screenshotDirUrls) => {
 
 const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
   const dateToday = getReportingDate(0, true);
-  let content;
+  let markdownContent;
+  let htmlContent;
   let count = 0;
   screenshotDirs.forEach((dir, dirIndex) => {
     fs.readdirSync(dir).forEach((file) => {
@@ -112,15 +111,21 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const license = metadata.transferTo || FILENAME;
       const licenseUrl = `${Config.SINGLE_LICENSE_ULR_BASE}${license}`;
       const transfer = metadata.transfer;
-      content = content || '';
-      content += `### ${count}. ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
-      content += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
+      markdownContent = markdownContent || '';
+      htmlContent = htmlContent || '';
+      markdownContent += `### ${count}. ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
+      htmlContent += `<h3>${count}. ${license} ${transfer ? `(transfer)` : ''} | <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></h3>\n`;
+      markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
+      htmlContent += `<img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />\n<hr />\n`;
     });
   });
-  const title = `# ABC Scraper - Weekly Report`;
-  content = content ? `#### ${dateToday.read}\n ${title} - ${count} listings\n ${content}`
+  const title = `ABC Scraper - Weekly Report`;
+  markdownContent = markdownContent ? `#### ${dateToday.read}\n# ${title} - ${count} listings\n ${markdownContent}`
     : `${title}\n\nNo screenshots found in the last ${Config.DAYS_RANGE} days`;
-  fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, content);
+  htmlContent = htmlContent ? `<h4>${dateToday.read}</h4><h1>${title} - ${count} listings</h1>${htmlContent}`
+    : `${title}<br><br>No screenshots found in the last ${Config.DAYS_RANGE} days`;
+  fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, markdownContent);
+  fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.html`, htmlContent);
 }
 
 const isFreshMailDate = (fileDay, debug = false) => {
