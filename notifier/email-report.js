@@ -57,15 +57,15 @@ const mailAlreadySent = () => {
 
 const sendEmail = (screenshotDirUrls) => {
   if (mailAlreadySent()) return;
-  let emailBodyText;
+    let emailBodyText;
     if (!screenshotDirUrls.length) {
       emailBodyText = `No screenshots found in the last ${CONFIG_DAYS} days`;
       console.log(emailBodyText);
     } else {
       emailBodyText = Config.EMAIL_HEADER;
       emailBodyText += `${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/email-report-${getReportingDate(0, true)?.write}.md`;
-      emailBodyText += '<br><h1 style="color:green">Hello</h1>'
     }
+    let emailBodyHtml = fs.readFileSync(`${Config.EMAIL_REPORTS_DIR}/email-report-${getReportingDate(0, true)?.write}.html`, 'utf8');
     const mailConfig = getMailConfig();
     if (!mailConfig) {
       console.log("no .mail-config file found");
@@ -83,7 +83,8 @@ const sendEmail = (screenshotDirUrls) => {
       ...mailOptions,
       to: mailConfig.MAIL_TO,
       subject: `${mailOptions.subject} ( ${convertDate(dateToday, true)} )`,
-      html: emailBodyText,
+      //text: emailBodyText,
+      html: emailBodyHtml,
     }, (error, response) => {
       if (error) {
         console.log('Error', error);
@@ -113,8 +114,8 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const transfer = metadata.transfer;
       markdownContent = markdownContent || '';
       htmlContent = htmlContent || '';
-      markdownContent += `### ${count}. ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
-      htmlContent += `<h3>${count}. ${license} ${transfer ? `(transfer)` : ''} | <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></h3>\n`;
+      markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
+      htmlContent += `<h3>${license} ${transfer ? `(transfer)` : ''} | <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></h3>\n`;
       markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
       htmlContent += `<img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />\n<hr />\n`;
     });
