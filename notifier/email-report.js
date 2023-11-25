@@ -64,6 +64,7 @@ const sendEmail = (screenshotDirUrls) => {
     } else {
       emailBodyText = Config.EMAIL_HEADER;
       emailBodyText += `${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/email-report-${getReportingDate(0, true)?.write}.md`;
+      emailBodyText += '<br><h1 style="color:green">Hello</h1>'
     }
     const mailConfig = getMailConfig();
     if (!mailConfig) {
@@ -80,6 +81,7 @@ const sendEmail = (screenshotDirUrls) => {
     });
     transporter.sendMail({
       ...mailOptions,
+      to: mailConfig.MAIL_TO,
       subject: `${mailOptions.subject} ( ${convertDate(dateToday, true)} )`,
       text: emailBodyText,
     }, (error, response) => {
@@ -168,7 +170,7 @@ var mailOptions = {
   to:[
     'zergworld+abcscraper@gmail.com',
     //'play+abcscraper@gtbilliards.com',
-    //'jre9754@gmail.com',
+    //'jre9754+abcscraper@gmail.com',
   ],
   subject: "GT WEEKLY -- ABC Scraper Weekly Report",
   text: "WORKING",
