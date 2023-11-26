@@ -188,7 +188,7 @@ const getMailConfig = () => {
 }
 
 var mailOptions = {
-  from: '"ABC Weekly Report" jhanink+abcscraper@gmail.com',
+  from: '"ABC Weekly Report" play+abcscraper@gtbilliards.com',
   to:[
     //'zergworld+abcscraper@gmail.com',
     //'play+abcscraper@gtbilliards.com',
