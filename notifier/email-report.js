@@ -115,9 +115,13 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       markdownContent = markdownContent || '';
       htmlContent = htmlContent || '';
       markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
-      htmlContent += `<div class="item-heading"><div class="item-links"> <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div><div class="license">${license} ${transfer ? `(transfer)` : ''}</div></div>\n`;
       markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
-      htmlContent += `<img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />`;
+      htmlContent += `
+  <div class="item-heading">
+    <div class="item-links"><a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div><div class="license">${license} ${transfer ? `(transfer)` : ''}</div>
+  </div>
+  <img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />
+ `;
     });
   });
   const title = `ABC Scraper - Weekly Report`;
