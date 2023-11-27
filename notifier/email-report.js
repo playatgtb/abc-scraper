@@ -136,7 +136,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       .license { display: inline-block; font-size: 1.5rem; font-weight: bold; color: black; margin: 10px; }
     </style>
   `;
-  htmlContent = htmlContent ? `<html>\n<head>${htmlHead}</head>\n<body>\n<div class="title">${title} - ${count} listings</div>\n${htmlContent}\n</body>\n</html>`
+  htmlContent = htmlContent ? `<html>\n  <head>${htmlHead}</head>\n<body>\n<div class="title">${title} - ${count} listings</div>\n${htmlContent}\n</body>\n</html>`
     : `${title}<br><br>No screenshots found in the last ${Config.DAYS_RANGE} days`;
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, markdownContent);
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.html`, htmlContent);
