@@ -28,10 +28,11 @@ const processRecords = async (page: any, reportConfig: ReportConfig) => {
   if (!rawRecords.length) return;
 
   console.log(`${rawRecords.length} records \n`);
-
+  const licenses = {};
   for (let i=0; i < rawRecords.length; i++) {
     const recordData = getRecordData(rawRecords[i]);
-    if (!basicFilterMatch(recordData)) continue;
+    if (!basicFilterMatch(recordData) || licenses[recordData.license]) continue;
+    licenses[recordData.license] = recordData;
     await handleKeywordMatchScreenshots(page, recordData, reportConfig);
   };
 }
@@ -205,7 +206,7 @@ const Config = {
   DAYS_RANGE: 7,
   THROTTLE_DELAY_SECONDS: 10,
   IGNORE_INCLUDE_KEYWORDS: true,
-  IGNORE_LICENSE_TYPES: true,
+  IGNORE_LICENSE_TYPES: false,
   INCLUDE_KEYWORDS: [
     'bar', 'pool hall', 'poolhall', 'billiards'
   ],
@@ -237,6 +238,22 @@ const Config = {
     '61', // On-Sale Beer - Public Premises
     '62', // On-Sale General Dockside, 7000 Tons
     '63', // On-Sale Special Beer and Wine Hospital
+    '64', // Special On-Sale General for Nonprofit Theater Company
+    '65', // Special On-Sale Beer and Wine Symphony
+    '67', // Bed and Breakfast Inn
+    '68', // Portable Bar License
+    '69', // Special On-Sale Beer and Wine Theater
+    '70', // On-Sale General - Restrictive Service
+    '71', // Special On-Sale General For-Profit Theater within city and county of SF
+    '72', // Special On-Sale General For-Profit Theater within county of Napa
+    '73', // Special Non-Profit Sales License
+    '75', // Brewpub-Restaurant
+    '80', // Bed and Breakfast Inn - General
+    '88', // Special On-Sale General License For-Profit Cemetary with Specified Characteristics
+    '90', // On-Sale General - Music Venue
+    '99', // On-Sale General for Special Use
+
+
   ],
   ZIP_CODES: [],
   Headers: {
