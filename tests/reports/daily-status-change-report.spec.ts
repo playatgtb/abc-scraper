@@ -81,7 +81,8 @@ const getLicenseType = (rawRecord: any) => rawRecord[Config.Headers.LICENSE_TYPE
 const basicFilterMatch = (recordData: RecordData) => {
   const record = recordData.rawRecord;
   const isStatusActive = record[Config.Headers.STATUS_CHANGE].split(' ')[1] === 'ACTIVE';
-  const licenseTypeMatch = Config.ABC_LICENSE_TYPES.includes(recordData.licenseType);
+  const licenseTypeMatch = Config.IGNORE_LICENSE_TYPES
+    || Config.ABC_LICENSE_TYPES.includes(recordData.licenseType);
   return isStatusActive && licenseTypeMatch;
 }
 
@@ -204,6 +205,7 @@ const Config = {
   DAYS_RANGE: 7,
   THROTTLE_DELAY_SECONDS: 10,
   IGNORE_INCLUDE_KEYWORDS: true,
+  IGNORE_LICENSE_TYPES: true,
   INCLUDE_KEYWORDS: [
     'bar', 'pool hall', 'poolhall', 'billiards'
   ],
@@ -215,8 +217,26 @@ const Config = {
     '40', // On-Sale Beer
     '41', // On-Sale Beer & Wine - Eating Place
     '42', // On-Sale Beer & Wine - Public Premises
+    '43', // On-Sale Beer and Wine Train
+    '44', // On-Sale Beer Fishing Party Boat
+    '45', // On-Sale Beer and Wine Boat
+    '46', // On-Sale Beer and Wine Airplane
     '47', // On-Sale General - Eating Place
     '48', // On-Sale General - Public Premises
+    '49', // On-Sale General - Seasonal
+    '51', // Club
+    '52', // Veteran's Club
+    '53', // On-Sale General Train
+    '54', // On-Sale General Boat
+    '55', // On-Sale General Airplane
+    '56', // On-Sale General Vessel 1000 Tons
+    '57', // Special On-Sale General
+    '58', // Caterer's Permit
+    '59', // On-Sale Beer & Wine - Seasonal
+    '60', // On-Sale Beer - Seasonal
+    '61', // On-Sale Beer - Public Premises
+    '62', // On-Sale General Dockside, 7000 Tons
+    '63', // On-Sale Special Beer and Wine Hospital
   ],
   ZIP_CODES: [],
   Headers: {
