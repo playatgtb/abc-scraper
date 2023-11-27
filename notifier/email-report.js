@@ -138,9 +138,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
   `;
   htmlContent = htmlContent ? `
   <html>
-    <head>
-      ${htmlHead}
-    </head>
+    <head>${htmlHead}</head>
     <body>
       <div class="title">${title} - ${count} listings</div>
       ${htmlContent}
