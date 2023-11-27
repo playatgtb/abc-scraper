@@ -138,11 +138,11 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
   `;
   htmlContent = htmlContent ? `
   <html>
-    <head>${htmlHead}</head>
-    <body>
-      <div class="title">${title} - ${count} listings</div>
-      ${htmlContent}
-    </body>
+  <head>${htmlHead}</head>
+  <body>
+    <div class="title">${title} - ${count} listings</div>
+    ${htmlContent}
+  </body>
   </html>
   `
     : `${title}<br><br>No screenshots found in the last ${Config.DAYS_RANGE} days`;
