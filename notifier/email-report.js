@@ -117,7 +117,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
       htmlContent += `<div class="item-heading"><div class="item-links"> <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div><div class="license">${license} ${transfer ? `(transfer)` : ''}</div></div>\n`;
       markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
-      htmlContent += `<img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />\n`;
+      htmlContent += `<img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />`;
     });
   });
   const title = `ABC Scraper - Weekly Report`;
@@ -125,19 +125,18 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     : `${title}\n\nNo screenshots found in the last ${Config.DAYS_RANGE} days`;
   htmlHead = `
     <style>
-    body {color: black}
-    .item-heading a {text-decoration: none; color: orange !important;}
-    .item-heading a:hover { color: red !important; }
-    .darkgray { color: darkgray; }
-    .header { font-size: 1.5rem; }
-    .title { font-size: 2rem; color: black;}
-    .item-links { display: inline-block; font-size: 1.5rem; font-weight: bold; padding: 5px 25px; border: 1px solid black; border-radius: 30px; background-color: black; color: white; }
-    .item-heading { margin: 30px 0px 10px }
-    .license { display: inline-block; font-size: 1.5rem; font-weight: bold; color: black; margin: 10px; }
-
+      body {color: black}
+      .item-heading a {text-decoration: none; color: orange !important;}
+      .item-heading a:hover { color: red !important; }
+      .darkgray { color: darkgray; }
+      .header { font-size: 1.5rem; }
+      .title { font-size: 2rem; color: black;}
+      .item-links { display: inline-block; font-size: 1.5rem; font-weight: bold; padding: 5px 25px; border: 1px solid black; border-radius: 30px; background-color: black; color: white; }
+      .item-heading { margin: 30px 0px 10px }
+      .license { display: inline-block; font-size: 1.5rem; font-weight: bold; color: black; margin: 10px; }
     </style>
   `;
-  htmlContent = htmlContent ? `<html>\n<head>\n${htmlHead}\n</head>\n<body>\n<div class="title">${title} - ${count} listings</div>\n${htmlContent}\n</body>\n</html>`
+  htmlContent = htmlContent ? `<html>\n<head>${htmlHead}</head>\n<body>\n<div class="title">${title} - ${count} listings</div>\n${htmlContent}\n</body>\n</html>`
     : `${title}<br><br>No screenshots found in the last ${Config.DAYS_RANGE} days`;
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, markdownContent);
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.html`, htmlContent);
