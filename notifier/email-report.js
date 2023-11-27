@@ -143,8 +143,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
   <html>
   <head>${htmlHead}</head>
   <body>
-    <div class="title">${title} - ${count} listings</div>
-    ${htmlContent}
+    <div class="title">${title} - ${count} listings</div>${htmlContent}
   </body>
   </html>
   `
