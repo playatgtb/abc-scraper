@@ -192,7 +192,7 @@ var mailOptions = {
   to:[
     //'zergworld+abcscraper@gmail.com',
     'play+abcscraper@gtbilliards.com',
-    //'jre9754+abcscraper@gmail.com',
+    'jre9754+abcscraper@gmail.com',
   ],
   subject: "GT WEEKLY -- ABC Scraper Weekly Report",
   text: "WORKING",
