@@ -211,8 +211,7 @@ const Config = {
     'bar', 'pool hall', 'poolhall', 'billiards'
   ],
   OMIT_KEYWORDS: [
-    'restaurant', 'sushi bar', 'bar & grill', 'bar and grill',
-    'ramen bar',
+    'restaurant', 'sushi', 'ramen', 'bar & grill', 'bar and grill',
   ],
   ABC_LICENSE_TYPES: [
     '40', // On-Sale Beer
