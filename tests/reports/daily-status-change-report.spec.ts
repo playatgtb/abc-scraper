@@ -86,9 +86,9 @@ const basicFilterMatch = (recordData: RecordData) => {
 }
 
 const businessNameKeywordMatch = (name: string) => {
-  const exclude = !!Config.OMIT_KEYWORDS.find(word => name.match(new RegExp(`\\b${word}\\b`, 'i')));
-  const include = !!Config.SEARCH_KEYWORDS.find(word => name.match(new RegExp(`\\b${word}\\b`, 'i')));
-  return !exclude && include;
+  const excludeTerms = !!Config.OMIT_KEYWORDS.find(word => name.match(new RegExp(`\\b${word}\\b`, 'i')));
+  const includeTerms = !!Config.INCLUDE_KEYWORDS.find(word => name.match(new RegExp(`\\b${word}\\b`, 'i')));
+  return !excludeTerms && (Config.IGNORE_INCLUDE_KEYWORDS || includeTerms);
 }
 
 const navigateToLicensePage = async (page: any, recordData: RecordData, reportConfig: ReportConfig) => {
@@ -203,8 +203,14 @@ const Config = {
   START_DAYS_AGO: 0,
   DAYS_RANGE: 7,
   THROTTLE_DELAY_SECONDS: 10,
-  SEARCH_KEYWORDS: ['bar', 'pool hall', 'poolhall', 'billiards'],
-  OMIT_KEYWORDS: ['restaurant', 'sushi bar', 'bar & grill', 'bar and grill'],
+  IGNORE_INCLUDE_KEYWORDS: true,
+  INCLUDE_KEYWORDS: [
+    'bar', 'pool hall', 'poolhall', 'billiards'
+  ],
+  OMIT_KEYWORDS: [
+    'restaurant', 'sushi bar', 'bar & grill', 'bar and grill',
+    'ramen bar',
+  ],
   ABC_LICENSE_TYPES: [
     '40', // On-Sale Beer
     '41', // On-Sale Beer & Wine - Eating Place
