@@ -115,9 +115,9 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       markdownContent = markdownContent || '';
       htmlContent = htmlContent || '';
       markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
-      htmlContent += `  <div class="item-heading"><div class="item-links"> <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div><div class="license">${license} ${transfer ? `(transfer)` : ''}</div></div>\n`;
+      htmlContent += `<div class="item-heading"><div class="item-links"> <a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div><div class="license">${license} ${transfer ? `(transfer)` : ''}</div></div>\n`;
       markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
-      htmlContent += `  <img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />`;
+      htmlContent += `<img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />`;
     });
   });
   const title = `ABC Scraper - Weekly Report`;
@@ -136,7 +136,17 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       .license { display: inline-block; font-size: 1.5rem; font-weight: bold; color: black; margin: 10px; }
     </style>
   `;
-  htmlContent = htmlContent ? `<html>\n  <head>${htmlHead}</head>\n<body>\  <div class="title">${title} - ${count} listings</div>\n${htmlContent}\n</body>\n</html>`
+  htmlContent = htmlContent ? `
+  <html>
+    <head>
+      ${htmlHead}
+    </head>
+    <body>
+      <div class="title">${title} - ${count} listings</div>
+      ${htmlContent}
+    </body>
+  </html>
+  `
     : `${title}<br><br>No screenshots found in the last ${Config.DAYS_RANGE} days`;
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, markdownContent);
   fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.html`, htmlContent);
