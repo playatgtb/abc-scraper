@@ -81,7 +81,7 @@ const sendEmail = (screenshotDirUrls) => {
     });
     transporter.sendMail({
       ...mailOptions,
-      to: mailConfig.MAIL_TO,
+      to: mailConfig.MAIL_TO || mailOptions.to,
       subject: `${mailOptions.subject} ( ${convertDate(dateToday, true)} )`,
       //text: emailBodyText,
       html: emailBodyHtml,
