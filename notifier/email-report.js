@@ -91,7 +91,7 @@ const sendEmail = (screenshotDirUrls) => {
       } else {
         // write last mail date to file
         fs.writeFileSync(Config.LAST_MAIL_SENT_FILE, dateToday);
-        console.log('--- Mail Sent');
+        console.log(`--- Mail Sent: ${mailConfig.MAIL_TO}`);
       }
     });
 }
