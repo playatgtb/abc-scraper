@@ -114,7 +114,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const transfer = metadata.transfer;
       markdownContent = markdownContent || '';
       htmlContent = htmlContent || '';
-      markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view license page](${licenseUrl})\n`;
+      markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view ABC license page](${licenseUrl})\n`;
       markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
       htmlContent +=`
     <div class="item-heading">
@@ -143,7 +143,9 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
   <html>
   <head>${htmlHead}</head>
   <body>
-    <div class="title">${title} - ${count} listings</div>${htmlContent}
+    <div class="title">${title} - ${count} listings</div>
+    <div>${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/email-report-${dateToday.write}.md</div>
+    ${htmlContent}
   </body>
   </html>
   `
