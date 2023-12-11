@@ -6,8 +6,6 @@ const argv = require('minimist')(process.argv.slice(2));
 //------------------------
 
 const main = () => {
-
-
   // CLI Input Options
   // rolling report period days, e.g.: 7
   const CONFIG_DAYS = argv._.length && argv._[0] || Config.DAYS_RANGE;
