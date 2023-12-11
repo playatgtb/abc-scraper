@@ -216,7 +216,7 @@ const Config = {
   SEND_MAIL: true,
   MAIL_CONFIG_FILE: '.mail-config',
   GITHUB_SCREENSHOTS_URL_BASE: 'https://raw.githubusercontent.com/playatgtb/abc-scraper/main/downloads',
-  GITHUB_WEEKLY_REPORT_URL_BASE: 'https://github.com/playatgtb/abc-scraper/tree/main/email-reports',
+  GITHUB_WEEKLY_REPORT_URL_BASE: 'https://github.com/playatgtb/abc-scraper/blob/main/email-reports',
   SINGLE_LICENSE_ULR_BASE: `https://www.abc.ca.gov/licensing/license-lookup/single-license/?RPTTYPE=12&LICENSE=`,
   LAST_MAIL_SENT_FILE: './LAST_MAIL_DATE',
   EMAIL_REPORTS_DIR: `./email-reports`,
