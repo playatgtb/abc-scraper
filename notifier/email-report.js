@@ -144,7 +144,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     <div class="title">${title} - ${count} listings</div>
     ${htmlContent}
     <div>
-      <a href="${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/email-report-${dateToday.write}.md">View archived report on GitHub</a>
+      <a href="https://htmlpreview.github.io/?${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/email-report-${dateToday.write}.html">github archive permalink</a>
     </div>
   </body>
   </html>

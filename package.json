@@ -23,5 +23,8 @@
     "csv-parse": "^5.5.2",
     "minimist": "^1.2.8",
     "nodemailer": "^6.9.7"
+  },
+  "dependencies": {
+    "@hubspot/api-client": "^10.1.0"
   }
 }
