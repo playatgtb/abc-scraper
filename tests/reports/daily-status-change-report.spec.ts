@@ -154,7 +154,7 @@ const getSingleLicense = (recordData: RecordData) => {
 const getReportingDate = (daysAgo: number, useToday = false): ReportDate => {
   const tempDate = new Date();
   if (!useToday) {
-    tempDate.setDate(tempDate.getDate() - Math.max(Config.START_DAYS_AGO, 2) - daysAgo);
+    tempDate.setDate(tempDate.getDate() - Math.max(Config.START_DAYS_AGO, 3) - daysAgo);
   }
   const date = tempDate.toLocaleDateString();
   const _ = date.split('/');

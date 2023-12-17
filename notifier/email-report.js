@@ -1,5 +1,5 @@
-
 const fs = require('fs');
+const hubspot = require('@hubspot/api-client');
 const nodemailer = require('nodemailer');
 const argv = require('minimist')(process.argv.slice(2));
 
@@ -127,13 +127,13 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
   htmlHead = `
     <style>
       body {color: black}
-      .item-heading a {text-decoration: none; color: orange !important;}
+      .item-heading { margin: 30px 0px 10px }
+      .item-heading a {font-family: Helvetica; text-decoration: none; color: orange !important;}
       .item-heading a:hover { color: red !important; }
+      .item-links { display: inline-block; font-size: 1.5rem; font-weight: bold; padding: 5px 25px; border: 1px solid black; border-radius: 30px; background-color: black; color: white; }
       .darkgray { color: darkgray; }
       .header { font-size: 1.5rem; }
       .title { font-size: 2rem; color: black;}
-      .item-links { display: inline-block; font-size: 1.5rem; font-weight: bold; padding: 5px 25px; border: 1px solid black; border-radius: 30px; background-color: black; color: white; }
-      .item-heading { margin: 30px 0px 10px }
       .license { display: inline-block; font-size: 1.5rem; font-weight: bold; color: black; margin: 10px; }
     </style>
   `;
@@ -188,6 +188,24 @@ const convertDate = (date, toLocalFormat=false) => {
   }
 }
 
+const hubspotTest = async () => {
+  const hubspotConfig = fs.existsSync(Config.HUBSPOT_CONFIG_FILE)
+    && JSON.parse(fs.readFileSync(Config.HUBSPOT_CONFIG_FILE));
+
+  if (!hubspotConfig) return;
+  const hubspotClient = new hubspot.Client({accessToken: hubspotConfig.ACCESS_TOKEN});
+  const contactObj = {
+    properties: {
+        firstname: 'TestFirstName',
+        lastname: 'TestLastName',
+        email: 'test@testemail.com'
+    },
+  }
+
+  const createContactResponse = await hubspotClient.crm.contacts.basicApi.create(contactObj)
+  console.log(createContactResponse)
+}
+
 /**
  *
  * @returns { MAIL_USER, MAIL_PASS_KEY }
@@ -215,6 +233,7 @@ const Config = {
   DAYS_RANGE: 7,
   SEND_MAIL: true,
   MAIL_CONFIG_FILE: '.mail-config',
+  HUBSPOT_CONFIG_FILE: '.hubspot-config',
   GITHUB_SCREENSHOTS_URL_BASE: 'https://raw.githubusercontent.com/playatgtb/abc-scraper/main/downloads',
   GITHUB_WEEKLY_REPORT_URL_BASE: 'https://github.com/playatgtb/abc-scraper/blob/main/email-reports',
   SINGLE_LICENSE_ULR_BASE: `https://www.abc.ca.gov/licensing/license-lookup/single-license/?RPTTYPE=12&LICENSE=`,
