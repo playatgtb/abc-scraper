@@ -202,6 +202,15 @@ const hubspotTest = async () => {
     },
   }
 
+  const taskObj = {
+    properties: {
+      title: 'Title',
+      type: 'Type',
+      priority: 'Priority',
+      notes: 'Notes',
+    }
+  }
+
   const createContactResponse = await hubspotClient.crm.contacts.basicApi.create(contactObj)
   console.log(createContactResponse)
 }

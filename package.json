@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npx playwright test",
+    "test-dev": "ABC_CONFIG_DAYS=1 npm run test",
     "weekly": "npm test; npm run weekly-git && npm run notifier",
     "weekly-report": "npm test; npm run notifier-report",
     "weekly-email": "npm test; npm run notifier-email",

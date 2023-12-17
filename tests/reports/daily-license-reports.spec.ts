@@ -2,14 +2,15 @@ import { test, expect } from '@playwright/test';
 import * as fs from "fs";
 import { parse } from "csv-parse/sync";
 
-function main() {
-  for (let i = 0; i < Config.DAYS_RANGE; i++) {
-    const date = getReportingDate(i);
 
+function main() {
+  const CONFIG_DAYS = Number(process.env.ABC_CONFIG_DAYS || Config.DAYS_RANGE);
+  for (let i = 0; i < CONFIG_DAYS; i++) {
+    const date = getReportingDate(i);
     test(`Status Change report ${date.read}`, async ({ page }) => {
       handleEmptyReport(i-1);
       const reportConfig = getReportConfig(date);
-      console.log(`-- ${i+1} of ${Config.DAYS_RANGE} : ${date.read}`, reportConfig);
+      console.log(`-- ${i+1} of ${CONFIG_DAYS} : ${date.read}`, reportConfig);
       if (!fs.existsSync(reportConfig.saveDir)) {
         await downloadReport(page, reportConfig, i);
         await processRecords(page, reportConfig);
@@ -174,7 +175,7 @@ const getRecordData = (record: any): RecordData => {
   const transferTo = transferToRecord && transferToRecord.split('-')[1].trim();
   const address = `${record[Config.Headers.ADDRESS_STREET]}, ${record[Config.Headers.ADDRESS_CITY]}`;
   const mapsUrl = `https://maps.google.com?q=${encodeURIComponent(address)}`;
-  const licensePageUrl = `${URL_SINGLE_LICENSE_BASE}${transferTo || license}`;
+  const licensePageUrl = `${URL_SINGLE_LICENSE}${transferTo || license}`;
 
   return {
     ownerDBA,
@@ -193,9 +194,9 @@ const getReportConfig = (date: ReportDate): ReportConfig => {
   return {
     date,
     saveDir,
-    downloadPath: `${saveDir}/${REPORT_DOWNLOAD_FILENAME}`,
-    statusChangesUrl: `${URL_STATUS_CHANGES_BASE}${date.read}`,
-    singleLicenseUrlBase: `${URL_SINGLE_LICENSE_BASE}`
+    downloadPath: `${saveDir}/${REPORT3_DOWNLOAD_FILENAME}`,
+    statusChangesUrl: `${URL_REPORTS_STATUS_CHANGES}${date.read}`,
+    singleLicenseUrlBase: `${URL_SINGLE_LICENSE}`
   };
 }
 
@@ -251,8 +252,6 @@ const Config = {
     '88', // Special On-Sale General License For-Profit Cemetary with Specified Characteristics
     '90', // On-Sale General - Music Venue
     '99', // On-Sale General for Special Use
-
-
   ],
   ZIP_CODES: [],
   Headers: {
@@ -291,11 +290,18 @@ type RecordData = {
 type ReportDate = {read: string, write: string};
 
 // ------------------------------
+const URL_REPORTS_BASE = 'https://www.abc.ca.gov/licensing/licensing-reports';
+const URL_LICENSE_LOOKUP_BASE = 'https://www.abc.ca.gov/licensing/license-lookup';
 
-const URL_STATUS_CHANGES_BASE = `https://www.abc.ca.gov/licensing/licensing-reports/status-changes/?RPTTYPE=3&RPTDATE=`;
-const URL_SINGLE_LICENSE_BASE = `https://www.abc.ca.gov/licensing/license-lookup/single-license/?RPTTYPE=12&LICENSE=`;
+const URL_REPORTS_ISSUED_LICENSES = `${URL_REPORTS_BASE}/issued-licenses/?RPTTYPE=1&RPTDATE=`;
+const URL_REPORTS_NEW_APPLICATIONS = `${URL_REPORTS_BASE}/new-applications/?RPTTYPE=2&RPTDATE=`
+const URL_REPORTS_STATUS_CHANGES = `${URL_REPORTS_BASE}/status-changes/?RPTTYPE=3&RPTDATE=`;
+const URL_SINGLE_LICENSE = `${URL_LICENSE_LOOKUP_BASE}/single-license/?RPTTYPE=12&LICENSE=`;
+
 const SPACES_24 = '                        ';
-const REPORT_DOWNLOAD_FILENAME = 'report-status-changes.csv';
+const REPORT1_DOWNLOAD_FILENAME = 'report-issued-licenses.csv';
+const REPORT2_DOWNLOAD_FILENAME = 'report-new-applications.csv';
+const REPORT3_DOWNLOAD_FILENAME = 'report-status-changes.csv';
 const ELEMENT_LOCATOR_FOR_SCREENSHOT = '#et-boc .et_pb_section_0';
 const ELEMENT_LOCATOR_DOWNLOAD_CSV_BUTTON = 'button:has-text("Download Report (CSV)")';
 const ELEMENT_LOCATOR_OWNER_NAME = 'dd:near(:text("Primary Owner"))';
