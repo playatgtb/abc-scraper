@@ -108,7 +108,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const metadata = JSON.parse(fs.readFileSync(`${dir}/${FILENAME}.json`));
       const mapsUrl = metadata.mapsUrl;
       const license = metadata.transferTo || FILENAME;
-      const licenseUrl = `${Config.SINGLE_LICENSE_ULR_BASE}${license}`;
+      const licenseUrl = `${Config.SINGLE_LICENSE_URL_BASE}${license}`;
       const transfer = metadata.transfer;
       markdownContent = markdownContent || '';
       htmlContent = htmlContent || '';
@@ -245,7 +245,7 @@ const Config = {
   HUBSPOT_CONFIG_FILE: '.hubspot-config',
   GITHUB_SCREENSHOTS_URL_BASE: 'https://raw.githubusercontent.com/playatgtb/abc-scraper/main/downloads',
   GITHUB_WEEKLY_REPORT_URL_BASE: 'https://github.com/playatgtb/abc-scraper/blob/main/email-reports',
-  SINGLE_LICENSE_ULR_BASE: `https://www.abc.ca.gov/licensing/license-lookup/single-license/?RPTTYPE=12&LICENSE=`,
+  SINGLE_LICENSE_URL_BASE: `https://www.abc.ca.gov/licensing/license-lookup/single-license/?RPTTYPE=12&LICENSE=`,
   LAST_MAIL_SENT_FILE: './LAST_MAIL_DATE',
   EMAIL_REPORTS_DIR: `./email-reports`,
   EMAIL_HEADER: `Hey John,\nThese are the locations that changed status in the past week. Tap on the link below to learn more about each location.\n\n`,
