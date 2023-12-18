@@ -315,9 +315,9 @@ const Config = {
     COUNTY_CODE: 'County',
   },
   includeReportTypes: {
-    ISSUED_LICENSES: true,
-    NEW_APPLICATIONS: false,
-    STATUS_CHANGES: false,
+    ISSUED_LICENSES:    true,   // report TYPE 1
+    NEW_APPLICATIONS:   false,  // report TYPE 2
+    STATUS_CHANGES:     true,   // report TYPE 3
   },
 };
 
