@@ -231,6 +231,7 @@ var mailOptions = {
     //'zergworld+abcscraper@gmail.com',
     'play+abcscraper@gtbilliards.com',
     'jre9754+abcscraper@gmail.com',
+    'angelc1225@yahoo.com',
   ],
   subject: "GT WEEKLY -- ABC Scraper Weekly Report",
   text: "WORKING",
