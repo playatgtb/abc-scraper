@@ -8,13 +8,13 @@ const argv = require('minimist')(process.argv.slice(2));
 const main = () => {
   // CLI Input Options
   // rolling report period days, e.g.: 7
-  const CONFIG_DAYS = argv._.length && argv._[0] || Config.DAYS_RANGE;
+  Config.DAYS_RANGE = argv._.length && argv._[0] || Config.DAYS_RANGE;
   // mode: 0 | 1
   const CONFIG_MODE_ADD_VIEWER = !!(argv._.length > 1 && argv._[1]);
 
   const screenshotDirs = [];
   const screenshotDirUrls = [];
-  for (let i = 0; i < CONFIG_DAYS; i++) {
+  for (let i = 0; i < Config.DAYS_RANGE; i++) {
     const date = getReportingDate(i)?.write;
     const screenshotDir = `./downloads/${date}-screenshots`;
     if (fs.existsSync(screenshotDir)) {

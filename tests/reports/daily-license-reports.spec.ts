@@ -1,19 +1,26 @@
 import { test, expect } from '@playwright/test';
 import * as fs from "fs";
 import { parse } from "csv-parse/sync";
-
+import { report } from 'process';
 
 function main() {
-  const CONFIG_DAYS = Number(process.env.ABC_CONFIG_DAYS || Config.DAYS_RANGE);
-  for (let i = 0; i < CONFIG_DAYS; i++) {
+  Config.DAYS_RANGE = Number(process.env.ABC_CONFIG_DAYS || Config.DAYS_RANGE);
+  for (let i = 0; i < Config.DAYS_RANGE; i++) {
     const date = getReportingDate(i);
     test(`Status Change report ${date.read}`, async ({ page }) => {
       handleEmptyReport(i-1);
       const reportConfig = getReportConfig(date);
-      console.log(`-- ${i+1} of ${CONFIG_DAYS} : ${date.read}`, reportConfig);
+      console.log(`-- ${i+1} of ${Config.DAYS_RANGE} : ${date.read}`, {
+        date: reportConfig.date,
+        saveDir: reportConfig.saveDir,
+      });
       if (!fs.existsSync(reportConfig.saveDir)) {
-        await downloadReport(page, reportConfig, i);
-        await processRecords(page, reportConfig);
+        const reportTypes = reportConfig.reportTypes;
+        for (let j = 0; j < reportTypes.length; j++) {
+          const reportType = reportTypes[j];
+          await downloadReport(page, reportConfig, reportType, i);
+          await processRecords(page, reportConfig, reportType);
+        }
       } else {
         console.log('records already processed');
       }
@@ -24,15 +31,21 @@ function main() {
 
 // ------------------------------
 
-const processRecords = async (page: any, reportConfig: ReportConfig) => {
-  const rawRecords = loadRecords(reportConfig.downloadPath);
+const processRecords = async (page: any, reportConfig: ReportConfig, reportType: ReportType) => {
+  const rawRecords = loadRecords(reportType.downloadPath);
   if (!rawRecords.length) return;
 
-  console.log(`${rawRecords.length} records \n`);
+  console.log(`-- Report Type `, {
+    id: reportType.id,
+    name: reportType.name,
+    downloadPath: reportType.downloadPath,
+    records: rawRecords.length,
+  });
+
   const licenses = {};
   for (let i=0; i < rawRecords.length; i++) {
-    const recordData = getRecordData(rawRecords[i]);
-    if (!basicFilterMatch(recordData) || licenses[recordData.license]) continue;
+    const recordData = getRecordData(rawRecords[i], reportType);
+    if (!basicFilterMatch(recordData, reportType) || licenses[recordData.license]) continue;
     licenses[recordData.license] = recordData;
     await handleKeywordMatchScreenshots(page, recordData, reportConfig);
   };
@@ -80,9 +93,13 @@ const handleEmptyReport = (daysAgo: number) => {
 const getOwnerDBA = (rawRecord: any) => rawRecord[Config.Headers.OWNER_DBA].split(SPACES_24)[0].trim();
 const getLicenseType = (rawRecord: any) => rawRecord[Config.Headers.LICENSE_TYPE].split('|')[0].trim();
 
-const basicFilterMatch = (recordData: RecordData) => {
+const basicFilterMatch = (recordData: RecordData, reportType: ReportType) => {
   const record = recordData.rawRecord;
-  const isStatusActive = record[Config.Headers.STATUS_CHANGE].split(' ')[1] === 'ACTIVE';
+
+  const isStatusActive = reportType.id === 3
+    ? record[Config.Headers.STATUS_CHANGE].split(' ')[1] === 'ACTIVE'
+    : record[Config.Headers.STATUS] === 'Active';
+
   const licenseTypeMatch = Config.IGNORE_LICENSE_TYPES
     || Config.ABC_LICENSE_TYPES.includes(recordData.licenseType);
   return isStatusActive && licenseTypeMatch;
@@ -130,18 +147,18 @@ const loadRecords = (file: string) => {
   });
 }
 
-const downloadReport = async (page: any, reportConfig: ReportConfig, daysAgo: number) => {
+const downloadReport = async (page: any, reportConfig: ReportConfig, reportType: ReportType, daysAgo: number) => {
   if (daysAgo > 0) {
     await throttlePageNavigation(page);
   }
-  await page.goto(reportConfig.statusChangesUrl);
+  await page.goto(reportType.url);
   const button = page.locator(ELEMENT_LOCATOR_DOWNLOAD_CSV_BUTTON);
   expect(button).toBeVisible({ timeout: 10000 });
 
   const downloadPromise = page.waitForEvent('download');
   await button.click();
   const download = await downloadPromise;
-  await download.saveAs(`${reportConfig.downloadPath}`);
+  await download.saveAs(`${reportType.downloadPath}`);
 }
 
 const hasTransferToRecord = (recordData: RecordData) => {
@@ -165,24 +182,32 @@ const getReportingDate = (daysAgo: number, useToday = false): ReportDate => {
   };
 }
 
-const getRecordData = (record: any): RecordData => {
+const getRecordData = (record: any, reportType: ReportType): RecordData => {
   const ownerDBA = getOwnerDBA(record);
   const licenseType = getLicenseType(record);
   const license = record[Config.Headers.LICENSE_NUMBER];
-  const transfer = record[Config.Headers.TRANSFER].trim();
-  const hasTransferToRecord = record[Config.Headers.TRANSFER].includes('/');
-  const transferToRecord = hasTransferToRecord && record[Config.Headers.TRANSFER].split('/')[1].trim();
-  const transferTo = transferToRecord && transferToRecord.split('-')[1].trim();
+
+  // transfer for reportType 3 only (status changes)
+  let transferInfo: any = {};
+  if (reportType.id === 3) {
+    const transfer = record[Config.Headers.TRANSFER].trim();
+    const hasTransferToRecord = record[Config.Headers.TRANSFER].includes('/');
+    const transferToRecord = hasTransferToRecord && record[Config.Headers.TRANSFER].split('/')[1].trim();
+    const transferTo = transferToRecord && transferToRecord.split('-')[1].trim();
+    transferInfo = {
+      transfer,
+      transferTo,
+    }
+  }
   const address = `${record[Config.Headers.ADDRESS_STREET]}, ${record[Config.Headers.ADDRESS_CITY]}`;
   const mapsUrl = `https://maps.google.com?q=${encodeURIComponent(address)}`;
-  const licensePageUrl = `${URL_SINGLE_LICENSE}${transferTo || license}`;
+  const licensePageUrl = `${URL_SINGLE_LICENSE}${transferInfo.transferTo || license}`;
 
   return {
     ownerDBA,
     license,
     licenseType,
-    transfer,
-    transferTo,
+    ...transferInfo,
     rawRecord: record,
     mapsUrl,
     licensePageUrl,
@@ -191,12 +216,35 @@ const getRecordData = (record: any): RecordData => {
 
 const getReportConfig = (date: ReportDate): ReportConfig => {
   const saveDir = `./downloads/${date.write}`;
+  const reportTypes = [
+    {
+      id: 1,
+      name: 'ISSUED_LICENSES',
+      url: `${URL_REPORTS_ISSUED_LICENSES}${date.read}`,
+      downloadPath: `${saveDir}/${REPORT1_DOWNLOAD_FILENAME}`,
+    },
+    {
+      id: 2,
+      name: 'NEW_APPLICATIONS',
+      url: `${URL_REPORTS_NEW_APPLICATIONS}${date.read}`,
+      downloadPath: `${saveDir}/${REPORT2_DOWNLOAD_FILENAME}`,
+    },
+    {
+      id: 3,
+      name: 'STATUS_CHANGES',
+      url: `${URL_REPORTS_STATUS_CHANGES}${date.read}`,
+      downloadPath: `${saveDir}/${REPORT3_DOWNLOAD_FILENAME}`,
+    }
+  ].filter(reportType => Config.includeReportTypes[reportType.name]);
   return {
     date,
     saveDir,
     downloadPath: `${saveDir}/${REPORT3_DOWNLOAD_FILENAME}`,
+    issuedLicensesUrl: `${URL_REPORTS_ISSUED_LICENSES}${date.read}`,
     statusChangesUrl: `${URL_REPORTS_STATUS_CHANGES}${date.read}`,
-    singleLicenseUrlBase: `${URL_SINGLE_LICENSE}`
+    newApplicationsUrl: `${URL_REPORTS_NEW_APPLICATIONS}${date.read}`,
+    singleLicenseUrlBase: `${URL_SINGLE_LICENSE}`,
+    reportTypes,
   };
 }
 
@@ -256,6 +304,7 @@ const Config = {
   ZIP_CODES: [],
   Headers: {
     LICENSE_TYPE: 'Type| Dup',
+    STATUS: 'Status',
     STATUS_CHANGE: 'Status Changed From/To',
     TRANSFER: 'Transfer-From/To',
     OWNER_DBA: 'Primary Owner and Premises Addr.',
@@ -265,6 +314,11 @@ const Config = {
     ADDRESS_ZIP: 'Zip Code',
     COUNTY_CODE: 'County',
   },
+  includeReportTypes: {
+    ISSUED_LICENSES: true,
+    NEW_APPLICATIONS: false,
+    STATUS_CHANGES: false,
+  },
 };
 
 // ------------------------------
@@ -273,16 +327,26 @@ type ReportConfig = {
   date: {read: string, write:string},
   saveDir: string,
   downloadPath: string,
+  issuedLicensesUrl: string,
+  newApplicationsUrl: string,
   statusChangesUrl: string,
   singleLicenseUrlBase: string,
+  reportTypes: ReportType[],
 };
+
+type ReportType = {
+  id: number,
+  name: string,
+  url: string,
+  downloadPath: string,
+}
 
 type RecordData = {
   ownerDBA: string,
   license: string,
   licenseType: string,
-  transfer: string,
-  transferTo: string,
+  transfer?: string,
+  transferTo?: string,
   mapsUrl: string,
   licensePageUrl: string,
   rawRecord: any,
