@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test';
 import * as fs from "fs";
 import { parse } from "csv-parse/sync";
-import { report } from 'process';
 
 function main() {
   Config.DAYS_RANGE = Number(process.env.ABC_CONFIG_DAYS || Config.DAYS_RANGE);
+  const ABC_IGNORE_ZIP_CODES = process.env.ABC_IGNORE_ZIP_CODES;
+  Config.IGNORE_ZIP_CODES = ABC_IGNORE_ZIP_CODES ?  ABC_IGNORE_ZIP_CODES === 'true' : Config.IGNORE_ZIP_CODES;
+
   for (let i = 0; i < Config.DAYS_RANGE; i++) {
     const date = getReportingDate(i);
     test(`Status Change report ${date.read}`, async ({ page }) => {
@@ -45,7 +47,10 @@ const processRecords = async (page: any, reportConfig: ReportConfig, reportType:
   const licenses = {};
   for (let i=0; i < rawRecords.length; i++) {
     const recordData = getRecordData(rawRecords[i], reportType);
+
     if (!basicFilterMatch(recordData, reportType) || licenses[recordData.license]) continue;
+    if (!zipCodeMatch(recordData)) continue;
+
     licenses[recordData.license] = recordData;
     await handleKeywordMatchScreenshots(page, recordData, reportConfig);
   };
@@ -103,6 +108,13 @@ const basicFilterMatch = (recordData: RecordData, reportType: ReportType) => {
   const licenseTypeMatch = Config.IGNORE_LICENSE_TYPES
     || Config.ABC_LICENSE_TYPES.includes(recordData.licenseType);
   return isStatusActive && licenseTypeMatch;
+}
+
+const zipCodeMatch = (recordData: RecordData) => {
+  const zipCode = recordData.rawRecord[Config.Headers.ADDRESS_ZIP];
+  const zipCodeNumber = Number(zipCode);
+  const zipCodeMatch = ZipCodes.find(zipCode => zipCodeNumber >= zipCode.from && zipCodeNumber <= zipCode.to);
+  return Config.IGNORE_ZIP_CODES || !!zipCodeMatch;
 }
 
 const businessNameKeywordMatch = (name: string) => {
@@ -250,12 +262,21 @@ const getReportConfig = (date: ReportDate): ReportConfig => {
 
 // ------------------------------
 
+const ZipCodes = [
+  {
+    name: 'LA_COUNTY',
+    from: 90001,
+    to: 90899,
+  }
+];
+
 const Config = {
-  START_DAYS_AGO: 0,
+  START_DAYS_AGO: 5,
   DAYS_RANGE: 7,
   THROTTLE_DELAY_SECONDS: 10,
   IGNORE_INCLUDE_KEYWORDS: true,
   IGNORE_LICENSE_TYPES: false,
+  IGNORE_ZIP_CODES: false,
   INCLUDE_KEYWORDS: [
     'bar', 'pool hall', 'poolhall', 'billiards'
   ],
@@ -301,7 +322,6 @@ const Config = {
     '90', // On-Sale General - Music Venue
     '99', // On-Sale General for Special Use
   ],
-  ZIP_CODES: [],
   Headers: {
     LICENSE_TYPE: 'Type| Dup',
     STATUS: 'Status',
@@ -314,8 +334,9 @@ const Config = {
     ADDRESS_ZIP: 'Zip Code',
     COUNTY_CODE: 'County',
   },
+  // status changes seems to subsume issued licenses
   includeReportTypes: {
-    ISSUED_LICENSES:    true,   // report TYPE 1
+    ISSUED_LICENSES:    false,  // report TYPE 1
     NEW_APPLICATIONS:   false,  // report TYPE 2
     STATUS_CHANGES:     true,   // report TYPE 3
   },

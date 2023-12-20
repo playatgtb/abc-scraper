@@ -77,9 +77,10 @@ const sendEmail = (screenshotDirUrls) => {
         pass: mailConfig.MAIL_PASS_KEY,
       },
     });
+    const mailTo = mailConfig.MAIL_TO || mailOptions.to;
     transporter.sendMail({
       ...mailOptions,
-      to: mailConfig.MAIL_TO || mailOptions.to,
+      to: mailTo,
       subject: `${mailOptions.subject} ( ${convertDate(dateToday, true)} )`,
       //text: emailBodyText,
       html: emailBodyHtml,
@@ -89,7 +90,7 @@ const sendEmail = (screenshotDirUrls) => {
       } else {
         // write last mail date to file
         fs.writeFileSync(Config.LAST_MAIL_SENT_FILE, dateToday);
-        console.log(`--- Mail Sent: ${mailConfig.MAIL_TO}`);
+        console.log(`--- Mail Sent: ${mailTo}`);
       }
     });
 }
@@ -221,17 +222,17 @@ const hubspotTest = async () => {
  */
 const getMailConfig = () => {
   const filename = `${Config.DOWNLOADS_DIR}/${Config.MAIL_CONFIG_FILE}`;
-  if (!fs.existsSync(filename)) return;
+  if (!fs.existsSync(filename)) return {};
   return JSON.parse(fs.readFileSync(filename));
 }
 
 var mailOptions = {
   from: '"ABC Weekly Report" play+abcscraper@gtbilliards.com',
-  to:[
+  to: [
     'play+abcscraper@gtbilliards.com',
     'jre9754+abcscraper@gmail.com',
-    'zergworld+abcscraper@gmail.com',
     'angelc1225@yahoo.com',
+    'zergworld+abcscraper@gmail.com',
   ],
   subject: "GT WEEKLY -- ABC Scraper Weekly Report",
   text: "WORKING",
