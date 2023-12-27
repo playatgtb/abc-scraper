@@ -271,7 +271,7 @@ const ZipCodes = [
 ];
 
 const Config = {
-  START_DAYS_AGO: 5,
+  START_DAYS_AGO: 3,
   DAYS_RANGE: 7,
   THROTTLE_DELAY_SECONDS: 10,
   IGNORE_INCLUDE_KEYWORDS: true,
