@@ -283,7 +283,7 @@ const Config = {
   OMIT_KEYWORDS: [
     'restaurant', 'sushi', 'ramen', 'bar & grill', 'bar and grill',
   ],
-  ABC_LICENSE_TYPES_2: [
+  ABC_LICENSE_TYPES: [
     '40', // On-Sale Beer
     '42', // On-Sale Beer & Wine - Public Premises
     '48', // On-Sale General - Public Premises
@@ -295,7 +295,7 @@ const Config = {
     '90', // On-Sale General - Music Venue
     '99', // On-Sale General for Special Use
   ],
-  ABC_LICENSE_TYPES: [
+  ABC_LICENSE_TYPES_1: [
     '40', // On-Sale Beer
     '41', // On-Sale Beer & Wine - Eating Place
     '42', // On-Sale Beer & Wine - Public Premises
