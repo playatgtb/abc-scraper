@@ -283,6 +283,18 @@ const Config = {
   OMIT_KEYWORDS: [
     'restaurant', 'sushi', 'ramen', 'bar & grill', 'bar and grill',
   ],
+  ABC_LICENSE_TYPES_2: [
+    '40', // On-Sale Beer
+    '42', // On-Sale Beer & Wine - Public Premises
+    '48', // On-Sale General - Public Premises
+    '58', // Caterer's Permit
+    '70', // On-Sale General - Restrictive Service
+    '75', // Brewpub-Restaurant
+    '76', // On-Sale General Maritime Museum Association:
+    '78', // On-Sale General for Wine, Food, and Art Cultural Museum, and Educational Center
+    '90', // On-Sale General - Music Venue
+    '99', // On-Sale General for Special Use
+  ],
   ABC_LICENSE_TYPES: [
     '40', // On-Sale Beer
     '41', // On-Sale Beer & Wine - Eating Place
