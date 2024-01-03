@@ -111,7 +111,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const license = metadata.transferTo || FILENAME;
       const licenseUrl = `${Config.SINGLE_LICENSE_URL_BASE}${license}`;
       const transfer = metadata.transfer;
-      const ownerDba = metadata.ownerDBA.split('DBA: ')[1];
+      const ownerDba = metadata.ownerDBA.split('DBA: ')[1] || '';
       markdownContent = markdownContent || '';
       htmlContent = htmlContent || '';
       markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view ABC license page](${licenseUrl})\n`;
