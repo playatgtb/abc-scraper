@@ -118,10 +118,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
       htmlContent +=`
     <div class="item-heading">
-      <div class="item-links"><a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div><div class="license">${license} ${transfer ? `(transfer)` : ''}</div>
-    </div>
-    <div class="item-business-name">
-      ${ownerDba}
+      <div class="item-links"><a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div><div class="license">${license} ${transfer ? `(transfer)` : ''} &nbsp;&nbsp; ${ownerDba}</div>
     </div>
     <img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />`;
     });
@@ -135,7 +132,6 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       .item-heading { margin: 30px 0px 10px }
       .item-heading a {font-family: Helvetica; text-decoration: none; color: orange !important;}
       .item-heading a:hover { color: red !important; }
-      .item-business-name { font-size: 1.2rem;}
       .item-links { display: inline-block; font-size: 1.5rem; font-weight: bold; padding: 5px 25px; border: 1px solid black; border-radius: 30px; background-color: black; color: white; }
       .darkgray { color: darkgray; }
       .header { font-size: 1.5rem; }
