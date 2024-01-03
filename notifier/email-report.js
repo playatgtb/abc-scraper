@@ -111,6 +111,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       const license = metadata.transferTo || FILENAME;
       const licenseUrl = `${Config.SINGLE_LICENSE_URL_BASE}${license}`;
       const transfer = metadata.transfer;
+      const ownerDba = metadata.ownerDBA.split('DBA: ')[1];
       markdownContent = markdownContent || '';
       htmlContent = htmlContent || '';
       markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view ABC license page](${licenseUrl})\n`;
@@ -118,6 +119,9 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       htmlContent +=`
     <div class="item-heading">
       <div class="item-links"><a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div><div class="license">${license} ${transfer ? `(transfer)` : ''}</div>
+    </div>
+    <div class="item-business-name">
+      ${ownerDba}
     </div>
     <img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />`;
     });
@@ -131,6 +135,7 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
       .item-heading { margin: 30px 0px 10px }
       .item-heading a {font-family: Helvetica; text-decoration: none; color: orange !important;}
       .item-heading a:hover { color: red !important; }
+      .item-business-name { font-size: 1.2rem;}
       .item-links { display: inline-block; font-size: 1.5rem; font-weight: bold; padding: 5px 25px; border: 1px solid black; border-radius: 30px; background-color: black; color: white; }
       .darkgray { color: darkgray; }
       .header { font-size: 1.5rem; }

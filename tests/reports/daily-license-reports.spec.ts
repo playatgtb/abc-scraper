@@ -140,11 +140,11 @@ const screenshot = async (page: any, recordData: RecordData, reportConfig: Repor
   console.log(`   * ${recordData.ownerDBA}`);
 }
 
-const saveRecordMetadata = async (page: any, recordData: RecordData, reportConfig: ReportConfig) => {
+const saveRecordMetadata = (page: any, recordData: RecordData, reportConfig: ReportConfig) => {
   const singleLicense = getSingleLicense(recordData);
   const metadataPath = `${reportConfig.saveDir}-screenshots/${singleLicense}.json`;
   const metadata = JSON.stringify(recordData);
-  await fs.writeFileSync(metadataPath, metadata);
+  fs.writeFileSync(metadataPath, metadata);
   console.log(`metadata saved: ${metadataPath}`);
 }
 
