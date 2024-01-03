@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "npx playwright test",
-    "test-dev": "ABC_CONFIG_DAYS=1 npm run test",
+    "test-dev": "ABC_CONFIG_DAYS=2 npm run test",
     "weekly": "npm test; npm run weekly-git && npm run notifier",
     "weekly-report": "npm test; npm run notifier-report",
     "weekly-email": "npm test; npm run notifier-email",
     "weekly-git": "git add downloads && git commit -am \"weekly processing\" && git push origin main",
     "notifier": "npm run notifier-report && npm run notifier-email && npm run notifier-git",
     "notifier-dev": "node notifier/email-report 1 1 && node notifier/email-report 1 0",
+    "notifier-report-dev": "node notifier/email-report 2 1",
     "notifier-report": "node notifier/email-report 7 1",
     "notifier-email": "node notifier/email-report 7 0",
     "notifier-git": "git add email-reports && git add LAST_MAIL_DATE && git commit -am \"update notifiers\" && git push origin main"

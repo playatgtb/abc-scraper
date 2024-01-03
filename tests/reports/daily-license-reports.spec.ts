@@ -227,7 +227,7 @@ const getRecordData = (record: any, reportType: ReportType): RecordData => {
 }
 
 const getReportConfig = (date: ReportDate): ReportConfig => {
-  const saveDir = `./downloads/${date.write}`;
+  const saveDir = `./downloads/${Config.AB_TEST_SUBDIR}${date.write}`;
   const reportTypes = [
     {
       id: 1,
@@ -271,6 +271,7 @@ const ZipCodes = [
 ];
 
 const Config = {
+  AB_TEST_SUBDIR: 'A/', // '/A' | ''
   START_DAYS_AGO: 3,
   DAYS_RANGE: 7,
   THROTTLE_DELAY_SECONDS: 10,

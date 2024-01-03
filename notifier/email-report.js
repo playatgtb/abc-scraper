@@ -16,10 +16,10 @@ const main = () => {
   const screenshotDirUrls = [];
   for (let i = 0; i < Config.DAYS_RANGE; i++) {
     const date = getReportingDate(i)?.write;
-    const screenshotDir = `./downloads/${date}-screenshots`;
+    const screenshotDir = `./downloads/${Config.AB_TEST_DIR}${date}-screenshots`;
     if (fs.existsSync(screenshotDir)) {
       screenshotDirs.push(screenshotDir);
-      screenshotDirUrls.push(`${Config.GITHUB_SCREENSHOTS_URL_BASE}/${date}-screenshots`);
+      screenshotDirUrls.push(`${Config.GITHUB_SCREENSHOTS_URL_BASE}/${Config.AB_TEST_DIR}${date}-screenshots`);
     }
   }
 
@@ -61,9 +61,9 @@ const sendEmail = (screenshotDirUrls) => {
       console.log(emailBodyText);
     } else {
       emailBodyText = Config.EMAIL_HEADER;
-      emailBodyText += `${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/email-report-${getReportingDate(0, true)?.write}.md`;
+      emailBodyText += `${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/${Config.AB_TEST_DIR}email-report-${getReportingDate(0, true)?.write}.md`;
     }
-    let emailBodyHtml = fs.readFileSync(`${Config.EMAIL_REPORTS_DIR}/email-report-${getReportingDate(0, true)?.write}.html`, 'utf8');
+    let emailBodyHtml = fs.readFileSync(`${Config.EMAIL_REPORTS_DIR}/${Config.AB_TEST_DIR}email-report-${getReportingDate(0, true)?.write}.html`, 'utf8');
     const mailConfig = getMailConfig();
     if (!mailConfig) {
       console.log("no .mail-config file found");
@@ -145,14 +145,20 @@ const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
     <div class="title">${title} - ${count} listings</div>
     ${htmlContent}
     <div>
-      <a href="https://htmlpreview.github.io/?${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/email-report-${dateToday.write}.html">github archive permalink</a>
+      <a href="https://htmlpreview.github.io/?${Config.GITHUB_WEEKLY_REPORT_URL_BASE}/${Config.AB_TEST_DIR}email-report-${dateToday.write}.html">github archive permalink</a>
     </div>
   </body>
   </html>
   `
     : `${title}<br><br>No screenshots found in the last ${Config.DAYS_RANGE} days`;
-  fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.md`, markdownContent);
-  fs.writeFileSync(`./email-reports/email-report-${dateToday.write}.html`, htmlContent);
+
+  const emailReportDir = `./email-reports/${Config.AB_TEST_DIR}`;
+  if (!fs.existsSync(emailReportDir)) {
+    fs.mkdirSync(emailReportDir, { recursive: true });
+  }
+
+  fs.writeFileSync(`${emailReportDir}email-report-${dateToday.write}.md`, markdownContent);
+  fs.writeFileSync(`${emailReportDir}email-report-${dateToday.write}.html`, htmlContent);
 }
 
 const isFreshMailDate = (fileDay, debug = false) => {
@@ -221,7 +227,7 @@ const hubspotTest = async () => {
  * @returns { MAIL_USER, MAIL_PASS_KEY }
  */
 const getMailConfig = () => {
-  const filename = `${Config.DOWNLOADS_DIR}/${Config.MAIL_CONFIG_FILE}`;
+  const filename = `${Config.ROOT_DIR}/${Config.MAIL_CONFIG_FILE}`;
   if (!fs.existsSync(filename)) return {};
   return JSON.parse(fs.readFileSync(filename));
 }
@@ -239,7 +245,8 @@ var mailOptions = {
 }
 
 const Config = {
-  DOWNLOADS_DIR: './',
+  AB_TEST_DIR: 'A/', // 'A/' or ''
+  ROOT_DIR: './',
   START_DAYS_AGO: 0,
   DAYS_RANGE: 7,
   SEND_MAIL: true,
