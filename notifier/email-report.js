@@ -245,7 +245,7 @@ var mailOptions = {
 }
 
 const Config = {
-  AB_TEST_DIR: 'A/', // 'A/' or ''
+  AB_TEST_DIR: '', // 'A/' or ''
   ROOT_DIR: './',
   START_DAYS_AGO: 0,
   DAYS_RANGE: 7,

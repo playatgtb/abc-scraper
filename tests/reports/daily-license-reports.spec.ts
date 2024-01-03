@@ -271,7 +271,7 @@ const ZipCodes = [
 ];
 
 const Config = {
-  AB_TEST_SUBDIR: 'A/', // '/A' | ''
+  AB_TEST_SUBDIR: '', // '/A' | ''
   START_DAYS_AGO: 3,
   DAYS_RANGE: 7,
   THROTTLE_DELAY_SECONDS: 10,
