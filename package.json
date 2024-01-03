@@ -5,17 +5,26 @@
   "main": "index.js",
   "scripts": {
     "test": "npx playwright test",
-    "test-dev": "ABC_CONFIG_DAYS=2 npm run test",
-    "weekly": "npm test; npm run weekly-git && npm run notifier",
+
+    "weekly": "npm test; npm run weekly-git; npm run notifier",
+    "weekly-ab-test": "npm test; npm run weekly-git; npm run notifier-abtest",
+
     "weekly-report": "npm test; npm run notifier-report",
     "weekly-email": "npm test; npm run notifier-email",
-    "weekly-git": "git add downloads && git commit -am \"weekly processing\" && git push origin main",
-    "notifier": "npm run notifier-report && npm run notifier-email && npm run notifier-git",
-    "notifier-dev": "node notifier/email-report 1 1 && node notifier/email-report 1 0",
-    "notifier-report-dev": "node notifier/email-report 2 1",
-    "notifier-report": "node notifier/email-report 7 1",
-    "notifier-email": "node notifier/email-report 7 0",
-    "notifier-git": "git add email-reports && git add LAST_MAIL_DATE && git commit -am \"update notifiers\" && git push origin main"
+    "weekly-git": "git add downloads; git commit -am \"weekly processing\"; git push origin main",
+
+    "notifier": "npm run notifier-report; npm run notifier-email; npm run notifier-git",
+    "notifier-ab-test": "ABC_AB_TEST=A npm run notifier-report; ABC_AB_TEST=A npm run notifier-email; npm run notifier-git",
+
+    "notifier-report": "ABC_DAYS=7 ABC_SEND_MAIL=0 node notifier/email-report",
+    "notifier-email": "ABC_DAYS=7 ABC_SEND_MAIL=1 node notifier/email-report",
+    "notifier-git": "git add email-reports; git add LAST_MAIL_DATE; git commit -am \"update notifiers\"; git push origin main",
+
+    "test-dev": "ABC_DAYS=2 npm run test",
+    "notifier-dev": "npm run notifier-report-dev; npm run notifier-email-dev",
+    "notifier-report-dev": "ABC_DAYS=2 ABC_SEND_MAIL=0 node notifier/email-report",
+    "notifier-report-ab-test-dev": "ABC_DAYS=2 ABC_SEND_MAIL=0 ABC_AB_TEST=A node notifier/email-report",
+    "notifier-email-dev": "ABC_DAYS=2 ABC_SEND_MAIL=1 node notifier/email-report"
   },
   "keywords": [],
   "author": "",

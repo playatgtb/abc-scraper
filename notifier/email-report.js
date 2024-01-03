@@ -1,16 +1,16 @@
 const fs = require('fs');
 const hubspot = require('@hubspot/api-client');
 const nodemailer = require('nodemailer');
-const argv = require('minimist')(process.argv.slice(2));
 
 //------------------------
 
 const main = () => {
-  // CLI Input Options
-  // rolling report period days, e.g.: 7
-  Config.DAYS_RANGE = argv._.length && argv._[0] || Config.DAYS_RANGE;
-  // mode: 0 | 1
-  const CONFIG_MODE_ADD_VIEWER = !!(argv._.length > 1 && argv._[1]);
+  // configuration options
+  Config['DAYS_RANGE'] = Number(process.env.ABC_DAYS || Config.DAYS_RANGE);
+  Config['SEND_MAIL'] = Number(process.env.ABC_SEND_MAIL || Config.SEND_MAIL);
+
+  const abTest = process.env.ABC_AB_TEST || Config.AB_TEST;
+  Config['AB_TEST_DIR'] = abTest.length ? `${abTest}/` : '';
 
   const screenshotDirs = [];
   const screenshotDirUrls = [];
@@ -23,19 +23,11 @@ const main = () => {
     }
   }
 
-  if (CONFIG_MODE_ADD_VIEWER)
-  // MODE 1 - add screenshot viewer
-  {
-    addScreenshotshotViewer(screenshotDirs, screenshotDirUrls);
-  }
-  else if (Config.SEND_MAIL)
-  // MODE 0 - send mail notification
-  {
+  if (Config.SEND_MAIL === 1) {
     sendEmail(screenshotDirUrls);
-  }
-  else
-  // do nothing
-  {
+  } else if (Config.SEND_MAIL === 0) {
+    addScreenshotshotViewer(screenshotDirs, screenshotDirUrls);
+  } else {
     console.log(Config);
   }
 }
@@ -57,7 +49,7 @@ const sendEmail = (screenshotDirUrls) => {
   if (mailAlreadySent()) return;
     let emailBodyText;
     if (!screenshotDirUrls.length) {
-      emailBodyText = `No screenshots found in the last ${CONFIG_DAYS} days`;
+      emailBodyText = `No screenshots found in the last ${Config.DAYS_RANGE} days`;
       console.log(emailBodyText);
     } else {
       emailBodyText = Config.EMAIL_HEADER;
@@ -247,11 +239,11 @@ var mailOptions = {
 }
 
 const Config = {
-  AB_TEST_DIR: '', // 'A/' or ''
+  AB_TEST: '',
   ROOT_DIR: './',
   START_DAYS_AGO: 0,
   DAYS_RANGE: 7,
-  SEND_MAIL: true,
+  SEND_MAIL: 1,
   MAIL_CONFIG_FILE: '.mail-config',
   HUBSPOT_CONFIG_FILE: '.hubspot-config',
   GITHUB_SCREENSHOTS_URL_BASE: 'https://raw.githubusercontent.com/playatgtb/abc-scraper/main/downloads',
