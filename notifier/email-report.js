@@ -127,7 +127,7 @@ const buildScreenshotDocuments = (screenshotFiles) => {
     </div>
     <img src="${dirUrl}/${file}" width="100%" />`;
   });
-  const title = `ABC Scraper - Weekly Report ${Config.AB_TEST.length ? ' - TEST (${Config.AB_TEST})' : ''}`;
+  const title = `ABC Scraper - Weekly Report ${Config.AB_TEST.length ? ` - TEST (${Config.AB_TEST})` : ''}`;
   markdownContent = markdownContent ? `# ${title} - ${count} listings\n ${markdownContent}`
     : `${title}\n\nNo screenshots found in the last ${Config.DAYS_RANGE} days`;
   htmlHead = `
@@ -261,7 +261,7 @@ var mailOptions = {
     'angelc1225@yahoo.com',
     'zergworld+abcscraper@gmail.com',
   ],
-  subject: `GT WEEKLY -- ABC Scraper Weekly Report ${Config.AB_TEST.length ?  ' - TEST (${Config.AB_TEST})' : ''}`,
+  subject: `GT WEEKLY -- ABC Scraper Weekly Report ${Config.AB_TEST.length ?  ` - TEST (${Config.AB_TEST})` : ''}`,
   text: "WORKING",
 }
 
