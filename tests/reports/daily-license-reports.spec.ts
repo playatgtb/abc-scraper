@@ -3,9 +3,11 @@ import * as fs from "fs";
 import { parse } from "csv-parse/sync";
 
 function main() {
-  Config.DAYS_RANGE = Number(process.env.ABC_CONFIG_DAYS || Config.DAYS_RANGE);
-  const ABC_IGNORE_ZIP_CODES = process.env.ABC_IGNORE_ZIP_CODES;
-  Config.IGNORE_ZIP_CODES = ABC_IGNORE_ZIP_CODES ?  ABC_IGNORE_ZIP_CODES === 'true' : Config.IGNORE_ZIP_CODES;
+  Config['DAYS_RANGE'] = Number(process.env.ABC_CONFIG_DAYS || Config.DAYS_RANGE);
+  const ignoreZipCodes = process.env.ABC_IGNORE_ZIP_CODES;
+  Config['IGNORE_ZIP_CODES'] = ignoreZipCodes ?  ignoreZipCodes === 'true' : Config.IGNORE_ZIP_CODES;
+  const abTest = process.env.ABC_AB_TEST || Config.AB_TEST;
+  Config['AB_TEST_DIR'] = abTest.length ? `${abTest}/` : '';
 
   for (let i = 0; i < Config.DAYS_RANGE; i++) {
     const date = getReportingDate(i);
@@ -227,7 +229,7 @@ const getRecordData = (record: any, reportType: ReportType): RecordData => {
 }
 
 const getReportConfig = (date: ReportDate): ReportConfig => {
-  const saveDir = `./downloads/${Config.AB_TEST_SUBDIR}${date.write}`;
+  const saveDir = `./downloads/${Config['AB_TEST_DIR']}${date.write}`;
   const reportTypes = [
     {
       id: 1,
@@ -271,7 +273,7 @@ const ZipCodes = [
 ];
 
 const Config = {
-  AB_TEST_SUBDIR: '', // '/A' | ''
+  AB_TEST: '',
   START_DAYS_AGO: 3,
   DAYS_RANGE: 7,
   THROTTLE_DELAY_SECONDS: 10,

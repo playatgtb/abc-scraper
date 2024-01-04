@@ -1,4 +1,4 @@
-# ABC Scraper - Weekly Report - 17 listings
+# ABC Scraper - Weekly Report  - 17 listings
  ### 643926  | [view map](https://maps.google.com?q=10723%20SOUTH%20ST%2C%20CERRITOS) | [view ABC license page](https://www.abc.ca.gov/licensing/license-lookup/single-license/?RPTTYPE=12&LICENSE=643926)
 ![643926](https://raw.githubusercontent.com/playatgtb/abc-scraper/main/downloads/2023-12-29-screenshots/643926.png)
 ---

@@ -8,7 +8,7 @@ const main = () => {
   // configuration options
   Config['DAYS_RANGE'] = Number(process.env.ABC_DAYS || Config.DAYS_RANGE);
   Config['SEND_MAIL'] = Number(process.env.ABC_SEND_MAIL || Config.SEND_MAIL);
-  const abTest = process.env.ABC_AB_TEST || Config.AB_TEST;
+  const abTest = Config['AB_TEST'] = process.env.ABC_AB_TEST || Config.AB_TEST;
   Config['AB_TEST_DIR'] = abTest.length ? `${abTest}/` : '';
 
   const screenshotDirs = [];
@@ -127,7 +127,7 @@ const buildScreenshotDocuments = (screenshotFiles) => {
     </div>
     <img src="${dirUrl}/${file}" width="100%" />`;
   });
-  const title = `ABC Scraper - Weekly Report`;
+  const title = `ABC Scraper - Weekly Report ${Config.AB_TEST.length ? ' - TEST (${Config.AB_TEST})' : ''}`;
   markdownContent = markdownContent ? `# ${title} - ${count} listings\n ${markdownContent}`
     : `${title}\n\nNo screenshots found in the last ${Config.DAYS_RANGE} days`;
   htmlHead = `
@@ -237,18 +237,6 @@ const getMailConfig = () => {
   return JSON.parse(fs.readFileSync(filename));
 }
 
-var mailOptions = {
-  from: '"ABC Weekly Report" play+abcscraper@gtbilliards.com',
-  to: [
-    'play+abcscraper@gtbilliards.com',
-    'jre9754+abcscraper@gmail.com',
-    'angelc1225@yahoo.com',
-    'zergworld+abcscraper@gmail.com',
-  ],
-  subject: "GT WEEKLY -- ABC Scraper Weekly Report",
-  text: "WORKING",
-}
-
 const Config = {
   AB_TEST: '',
   ROOT_DIR: './',
@@ -263,6 +251,18 @@ const Config = {
   LAST_MAIL_SENT_FILE: './LAST_MAIL_DATE',
   EMAIL_REPORTS_DIR: `./email-reports`,
   EMAIL_HEADER: `Hey John,\nThese are the locations that changed status in the past week. Tap on the link below to learn more about each location.\n\n`,
+}
+
+var mailOptions = {
+  from: '"ABC Weekly Report" play+abcscraper@gtbilliards.com',
+  to: [
+    'play+abcscraper@gtbilliards.com',
+    'jre9754+abcscraper@gmail.com',
+    'angelc1225@yahoo.com',
+    'zergworld+abcscraper@gmail.com',
+  ],
+  subject: `GT WEEKLY -- ABC Scraper Weekly Report ${Config.AB_TEST.length ?  ' - TEST (${Config.AB_TEST})' : ''}`,
+  text: "WORKING",
 }
 
 //------------------------
