@@ -7,22 +7,26 @@
     "test": "npx playwright test",
 
     "weekly": "npm test; npm run weekly-git; npm run notifier",
-    "weekly-ab-test": "npm test; npm run weekly-git; npm run notifier-abtest",
+    "weekly-ab-test": "npm test; npm run weekly-git; npm run notifier-ab-test",
 
     "weekly-report": "npm test; npm run notifier-report",
     "weekly-email": "npm test; npm run notifier-email",
     "weekly-git": "git add downloads; git commit -am \"weekly processing\"; git push origin main",
 
     "notifier": "npm run notifier-report; npm run notifier-email; npm run notifier-git",
-    "notifier-ab-test": "ABC_AB_TEST=A npm run notifier-report; ABC_AB_TEST=A npm run notifier-email; npm run notifier-git",
+    "notifier-ab-test": "npm run notifier-report-ab-test; npm run notifier-email-ab-test; npm run notifier-git",
 
     "notifier-report": "ABC_DAYS=7 ABC_SEND_MAIL=0 node notifier/email-report",
+    "notifier-report-ab-test": "ABC_DAYS=7 ABC_SEND_MAIL=0 ABC_AB_TEST=A node notifier/email-report",
+
     "notifier-email": "ABC_DAYS=7 ABC_SEND_MAIL=1 node notifier/email-report",
+    "notifier-email-ab-test": "ABC_DAYS=7 ABC_SEND_MAIL=1 ABC_AB_TEST=A node notifier/email-report",
+
     "notifier-git": "git add email-reports; git add LAST_MAIL_DATE; git commit -am \"update notifiers\"; git push origin main",
 
     "test-dev": "ABC_DAYS=2 npm run test",
     "notifier-dev": "npm run notifier-report-dev; npm run notifier-email-dev",
-    "notifier-report-dev": "ABC_DAYS=2 ABC_SEND_MAIL=0 node notifier/email-report",
+    "notifier-report-dev": "ABC_DAYS=7 ABC_SEND_MAIL=0 node notifier/email-report",
     "notifier-report-ab-test-dev": "ABC_DAYS=2 ABC_SEND_MAIL=0 ABC_AB_TEST=A node notifier/email-report",
     "notifier-email-dev": "ABC_DAYS=2 ABC_SEND_MAIL=1 node notifier/email-report"
   },

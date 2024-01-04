@@ -8,7 +8,6 @@ const main = () => {
   // configuration options
   Config['DAYS_RANGE'] = Number(process.env.ABC_DAYS || Config.DAYS_RANGE);
   Config['SEND_MAIL'] = Number(process.env.ABC_SEND_MAIL || Config.SEND_MAIL);
-
   const abTest = process.env.ABC_AB_TEST || Config.AB_TEST;
   Config['AB_TEST_DIR'] = abTest.length ? `${abTest}/` : '';
 
@@ -23,10 +22,23 @@ const main = () => {
     }
   }
 
+  // de-dupe licenses that occur on multiple days
+  let count = 0;
+  const screenshotFiles = {};
+  screenshotDirs.forEach((dir, dirIndex) => {
+    fs.readdirSync(dir).forEach((file) => {
+      if (!file.endsWith('.png')) return;
+      if (!screenshotFiles[file]) {
+        const dirUrl = screenshotDirUrls[dirIndex];
+        screenshotFiles[file] = {file, dir, dirUrl};
+      }
+    });
+  });
+
   if (Config.SEND_MAIL === 1) {
     sendEmail(screenshotDirUrls);
   } else if (Config.SEND_MAIL === 0) {
-    addScreenshotshotViewer(screenshotDirs, screenshotDirUrls);
+    buildScreenshotDocuments(screenshotFiles);
   } else {
     console.log(Config);
   }
@@ -87,34 +99,33 @@ const sendEmail = (screenshotDirUrls) => {
     });
 }
 
-const addScreenshotshotViewer = (screenshotDirs, screenshotDirUrls) => {
+const buildScreenshotDocuments = (screenshotFiles) => {
   const dateToday = getReportingDate(0, true);
   let markdownContent;
   let htmlContent;
   let count = 0;
-  screenshotDirs.forEach((dir, dirIndex) => {
-    fs.readdirSync(dir).forEach((file) => {
-      if (!file.endsWith('.png')) return;
-      console.log({dir, file})
-      count++;
-      const FILENAME = file.split('.')[0];
-      const metadata = JSON.parse(fs.readFileSync(`${dir}/${FILENAME}.json`));
-      const mapsUrl = metadata.mapsUrl;
-      const license = metadata.transferTo || FILENAME;
-      const licenseUrl = `${Config.SINGLE_LICENSE_URL_BASE}${license}`;
-      const transfer = metadata.transfer;
-      const ownerDbaSplit = metadata.ownerDBA.split('DBA: ');
-      const ownerDba = (ownerDbaSplit.length === 2 && ownerDbaSplit[1]) || '';
-      markdownContent = markdownContent || '';
-      htmlContent = htmlContent || '';
-      markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view ABC license page](${licenseUrl})\n`;
-      markdownContent += `![${license}](${screenshotDirUrls[dirIndex]}/${file})\n---\n`;
-      htmlContent +=`
+  let fileNames = Object.keys(screenshotFiles);
+  fileNames.forEach((file) => {
+    const {dir, dirUrl} = screenshotFiles[file];
+    if (!file.endsWith('.png')) return;
+    console.log(++count, {dir, file})
+    const FILENAME = file.split('.')[0];
+    const metadata = JSON.parse(fs.readFileSync(`${dir}/${FILENAME}.json`));
+    const mapsUrl = metadata.mapsUrl;
+    const license = metadata.transferTo || FILENAME;
+    const licenseUrl = `${Config.SINGLE_LICENSE_URL_BASE}${license}`;
+    const transfer = metadata.transfer;
+    const ownerDbaSplit = metadata.ownerDBA.split('DBA: ');
+    const ownerDba = (ownerDbaSplit.length === 2 && ownerDbaSplit[1]) || '';
+    markdownContent = markdownContent || '';
+    htmlContent = htmlContent || '';
+    markdownContent += `### ${license} ${transfer ? `(transfer)` : ''} | [view map](${mapsUrl}) | [view ABC license page](${licenseUrl})\n`;
+    markdownContent += `![${license}](${dirUrl}/${file})\n---\n`;
+    htmlContent +=`
     <div class="item-heading">
       <div class="item-links"><a href="${mapsUrl}">view map</a> | <a href="${licenseUrl}">view license page</a></div><div class="license">${license} ${transfer ? `(transfer)` : ''} &nbsp;&nbsp; ${ownerDba}</div>
     </div>
-    <img src="${screenshotDirUrls[dirIndex]}/${file}" width="100%" />`;
-    });
+    <img src="${dirUrl}/${file}" width="100%" />`;
   });
   const title = `ABC Scraper - Weekly Report`;
   markdownContent = markdownContent ? `# ${title} - ${count} listings\n ${markdownContent}`
@@ -241,7 +252,7 @@ var mailOptions = {
 const Config = {
   AB_TEST: '',
   ROOT_DIR: './',
-  START_DAYS_AGO: 0,
+  START_DAYS_AGO: 3,
   DAYS_RANGE: 7,
   SEND_MAIL: 1,
   MAIL_CONFIG_FILE: '.mail-config',
