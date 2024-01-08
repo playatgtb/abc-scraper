@@ -47,8 +47,10 @@ const main = () => {
 //------------------------
 
 const mailAlreadySent = () => {
-  if (fs.existsSync(Config.LAST_MAIL_SENT_FILE)) {
-    const fileDate = fs.readFileSync(Config.LAST_MAIL_SENT_FILE, 'utf8');
+  const withABTest = Config.AB_TEST === 'A' ? '_A' : '';
+  const lastMailSentFile = Config[`LAST_MAIL_SENT_FILE${withABTest}`];
+  if (fs.existsSync(lastMailSentFile)) {
+    const fileDate = fs.readFileSync(lastMailSentFile, 'utf8');
     if (!isFreshMailDate(fileDate, true)) {
       console.log(`--- Mail already sent this period on (${convertDate(fileDate, true)})`);
       return true;
@@ -82,18 +84,22 @@ const sendEmail = (screenshotDirUrls) => {
       },
     });
     const mailTo = mailConfig.MAIL_TO || mailOptions.to;
+
+    const withABTest = Config.AB_TEST === 'A' ? ' - A' : '';
+    const subject = `${mailOptions.subject}${withABTest}`;
+    const lastMailSentFile = Config[`LAST_MAIL_SENT_FILE${withABTest}`];
+
     transporter.sendMail({
       ...mailOptions,
       to: mailTo,
-      subject: `${mailOptions.subject} ( ${convertDate(dateToday, true)} )`,
-      //text: emailBodyText,
+      subject: `${subject} ( ${convertDate(dateToday, true)} )`,
       html: emailBodyHtml,
     }, (error, response) => {
       if (error) {
         console.log('Error', error);
       } else {
         // write last mail date to file
-        fs.writeFileSync(Config.LAST_MAIL_SENT_FILE, dateToday);
+        fs.writeFileSync(lastMailSentFile, dateToday);
         console.log(`--- Mail Sent: ${mailTo}`);
       }
     });
