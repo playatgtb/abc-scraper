@@ -6,7 +6,7 @@ function main() {
   Config['DAYS_RANGE'] = Number(process.env.ABC_CONFIG_DAYS || Config.DAYS_RANGE);
   const ignoreZipCodes = process.env.ABC_IGNORE_ZIP_CODES;
   Config['IGNORE_ZIP_CODES'] = ignoreZipCodes ?  ignoreZipCodes === 'true' : Config.IGNORE_ZIP_CODES;
-  const abTest = process.env.ABC_AB_TEST || Config.AB_TEST;
+  const abTest = Config['AB_TEST'] = process.env.ABC_AB_TEST || Config.AB_TEST;
   Config['AB_TEST_DIR'] = abTest.length ? `${abTest}/` : '';
 
   for (let i = 0; i < Config.DAYS_RANGE; i++) {
@@ -17,6 +17,7 @@ function main() {
       console.log(`-- ${i+1} of ${Config.DAYS_RANGE} : ${date.read}`, {
         date: reportConfig.date,
         saveDir: reportConfig.saveDir,
+        isABTest: Config.AB_TEST === 'A',
       });
       if (!fs.existsSync(reportConfig.saveDir)) {
         const reportTypes = reportConfig.reportTypes;
@@ -107,8 +108,13 @@ const basicFilterMatch = (recordData: RecordData, reportType: ReportType) => {
     ? record[Config.Headers.STATUS_CHANGE].split(' ')[1] === 'ACTIVE'
     : record[Config.Headers.STATUS] === 'Active';
 
+
+  const withABTest = Config.AB_TEST === 'A' ? '_A' : '';
+  const licenseTypes = Config[`ABC_LICENSE_TYPES${withABTest}`];
+
   const licenseTypeMatch = Config.IGNORE_LICENSE_TYPES
-    || Config.ABC_LICENSE_TYPES.includes(recordData.licenseType);
+    || licenseTypes.includes(recordData.licenseType);
+
   return isStatusActive && licenseTypeMatch;
 }
 
@@ -191,7 +197,7 @@ const getReportingDate = (daysAgo: number, useToday = false): ReportDate => {
   const date = tempDate.toLocaleDateString();
   const _ = date.split('/');
   return {
-    read: `${_[0]}/${_[1].padStart(2, '0')}/${_[2].padStart(2, '0')}`,
+    read: `${_[0].padStart(2, '0')}/${_[1].padStart(2, '0')}/${_[2]}`,
     write: `${_[2]}-${_[0].padStart(2, '0')}-${_[1].padStart(2, '0')}`,
   };
 }
@@ -288,18 +294,6 @@ const Config = {
   ],
   ABC_LICENSE_TYPES: [
     '40', // On-Sale Beer
-    '42', // On-Sale Beer & Wine - Public Premises
-    '48', // On-Sale General - Public Premises
-    '58', // Caterer's Permit
-    '70', // On-Sale General - Restrictive Service
-    '75', // Brewpub-Restaurant
-    '76', // On-Sale General Maritime Museum Association:
-    '78', // On-Sale General for Wine, Food, and Art Cultural Museum, and Educational Center
-    '90', // On-Sale General - Music Venue
-    '99', // On-Sale General for Special Use
-  ],
-  ABC_LICENSE_TYPES_1: [
-    '40', // On-Sale Beer
     '41', // On-Sale Beer & Wine - Eating Place
     '42', // On-Sale Beer & Wine - Public Premises
     '43', // On-Sale Beer and Wine Train
@@ -334,6 +328,18 @@ const Config = {
     '75', // Brewpub-Restaurant
     '80', // Bed and Breakfast Inn - General
     '88', // Special On-Sale General License For-Profit Cemetary with Specified Characteristics
+    '90', // On-Sale General - Music Venue
+    '99', // On-Sale General for Special Use
+  ],
+  ABC_LICENSE_TYPES_A: [
+    '40', // On-Sale Beer
+    '42', // On-Sale Beer & Wine - Public Premises
+    '48', // On-Sale General - Public Premises
+    '58', // Caterer's Permit
+    '70', // On-Sale General - Restrictive Service
+    '75', // Brewpub-Restaurant
+    '76', // On-Sale General Maritime Museum Association:
+    '78', // On-Sale General for Wine, Food, and Art Cultural Museum, and Educational Center
     '90', // On-Sale General - Music Venue
     '99', // On-Sale General for Special Use
   ],
@@ -403,7 +409,7 @@ const REPORT1_DOWNLOAD_FILENAME = 'report-issued-licenses.csv';
 const REPORT2_DOWNLOAD_FILENAME = 'report-new-applications.csv';
 const REPORT3_DOWNLOAD_FILENAME = 'report-status-changes.csv';
 const ELEMENT_LOCATOR_FOR_SCREENSHOT = '#et-boc .et_pb_section_0';
-const ELEMENT_LOCATOR_DOWNLOAD_CSV_BUTTON = 'button:has-text("Download Report (CSV)")';
+const ELEMENT_LOCATOR_DOWNLOAD_CSV_BUTTON = 'button:has-text("Download Report")';
 const ELEMENT_LOCATOR_OWNER_NAME = 'dd:near(:text("Primary Owner"))';
 
 // ------------------------------
