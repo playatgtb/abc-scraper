@@ -7,8 +7,10 @@ echo "$USER" >> ~/Desktop/cron.log
 
 git pull origin main
 npm i
+
 npm run weekly
 echo "-- ran weekly" >> ~/Desktop/cron.log
-npm run weekly-a
-echo "-- ran weekly-a" >> ~/Desktop/cron.log
+
+#npm run weekly-a
+#echo "-- ran weekly-a" >> ~/Desktop/cron.log
 
